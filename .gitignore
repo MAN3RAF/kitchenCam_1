@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+
+# Expo and React Native
+.expo/
+.expo-shared/
+dist/
+web-build/
+android/
+ios/
+
+# Build and coverage output
+build/
+coverage/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# TypeScript
+*.tsbuildinfo
+
+# Python tooling used by project skills
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local caches and temporary files
+.cache/
+.tmp/
+temp/
+*.tmp
+*.swp
+*~
+
+# Native signing and local service configuration
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.key
+*.mobileprovision
+GoogleService-Info.plist
+google-services.json
