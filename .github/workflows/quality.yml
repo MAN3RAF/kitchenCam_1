@@ -24,13 +24,15 @@ jobs:
       - uses: pnpm/action-setup@v6
       - run: pnpm install --frozen-lockfile
       - run: pnpm deps:check
-      - run: pnpm doctor
+      - run: pnpm run doctor
       - run: pnpm export:check
       - run: pnpm check
       - run: pnpm backend:start
       - run: pnpm db:reset
       - run: pnpm db:test
       - run: pnpm db:lint
+      - run: pnpm backend:test
+      - run: pnpm db:types:check
       - run: pnpm db:types
       - run: git ls-files --error-unmatch src/types/database.generated.ts
       - run: git diff --exit-code -- src/types/database.generated.ts

@@ -95,7 +95,7 @@ Supabase Auth session persistence uses platform SecureStore on native and sessio
 
 ## Validation commands
 
-`pnpm check` runs TypeScript, ESLint, Prettier, Jest component/unit tests, and Node build-boundary tests. `pnpm deps:check` uses Expo's SDK compatibility check. `pnpm doctor` runs Expo diagnostics. `pnpm export:check` compiles Android, iOS, and web bundles; exports are ignored, not committed. CI runs these on pull requests and main with read-only repository permissions and no production secrets.
+`pnpm check` runs TypeScript, ESLint, Prettier, Jest component/unit tests, and Node build-boundary tests. `pnpm deps:check` uses Expo's SDK compatibility check. `pnpm run doctor` runs Expo diagnostics. `pnpm export:check` compiles Android, iOS, and web bundles; exports are ignored, not committed. CI runs these on pull requests and main with read-only repository permissions and no production secrets.
 
 Tests cover invalid configuration without value leakage, disallowed client imports, public app-config output, contrast, accessible disabled buttons and recovery, reduced-motion loading, and connectivity-event races/unsubscription. E2E/device automation will be added when native clients and meaningful workflows exist. No placeholder tests assert fake production behavior.
 

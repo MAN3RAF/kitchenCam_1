@@ -15,6 +15,10 @@ Deno.serve(async (request) => {
   const requestIdentifier = requestId(request);
   try {
     if (request.method !== 'POST') throw new FunctionError('METHOD_NOT_ALLOWED', 405);
+    const client = userClient(request);
+    const user = await requireUser(client);
+    if (user.is_anonymous) throw new Error('PERMANENT_ACCOUNT_REQUIRED');
+
     const body: unknown = await request.json();
     const token =
       typeof body === 'object' && body !== null && 'token' in body
@@ -23,10 +27,6 @@ Deno.serve(async (request) => {
     if (typeof token !== 'string' || !/^[0-9a-f]{64}$/.test(token)) {
       throw new FunctionError('VALIDATION', 400);
     }
-
-    const client = userClient(request);
-    const user = await requireUser(client);
-    if (user.is_anonymous) throw new Error('PERMANENT_ACCOUNT_REQUIRED');
 
     const { data, error } = await client.rpc('consume_account_merge_ticket', {
       p_token_hash: await sha256(token),

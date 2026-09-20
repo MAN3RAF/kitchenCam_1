@@ -1,5 +1,12 @@
 const { spawnSync } = require('node:child_process');
-const { mkdirSync, renameSync, rmSync, writeFileSync } = require('node:fs');
+const {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} = require('node:fs');
 const path = require('node:path');
 
 const projectRoot = process.cwd();
@@ -29,6 +36,15 @@ if (result.status !== 0) {
 if (!result.stdout.includes('export type Database')) {
   process.stderr.write('Supabase returned an unexpected database type payload.\n');
   process.exit(1);
+}
+
+if (process.argv.includes('--check')) {
+  if (!existsSync(target) || readFileSync(target, 'utf8') !== result.stdout) {
+    process.stderr.write('Database types differ from the local schema. Run pnpm db:types.\n');
+    process.exit(1);
+  }
+  process.stdout.write('Database types match the local schema.\n');
+  process.exit(0);
 }
 
 mkdirSync(path.dirname(target), { recursive: true });

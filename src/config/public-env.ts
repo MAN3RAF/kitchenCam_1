@@ -4,7 +4,11 @@ const publicEnvironmentSchema = z
   .object({
     appEnvironment: z.enum(['development', 'staging', 'production']).default('development'),
     supabaseUrl: z.url().optional(),
-    supabasePublishableKey: z.string().min(20).optional(),
+    supabasePublishableKey: z
+      .string()
+      .min(20)
+      .regex(/^sb_publishable_[A-Za-z0-9_-]+$/)
+      .optional(),
   })
   .refine(
     (environment) =>

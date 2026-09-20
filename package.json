@@ -25,10 +25,13 @@
     "backend:start": "supabase start",
     "backend:status": "supabase status",
     "backend:stop": "supabase stop --no-backup",
+    "backend:functions": "supabase functions serve",
+    "backend:test": "node --test tests/backend-runtime.test.cjs",
     "db:reset": "supabase db reset --local",
     "db:test": "supabase test db",
-    "db:lint": "supabase db lint --local --level warning",
-    "db:types": "node tooling/generate-database-types.cjs"
+    "db:lint": "supabase db lint --local --level warning --fail-on warning",
+    "db:types": "node tooling/generate-database-types.cjs",
+    "db:types:check": "node tooling/generate-database-types.cjs --check"
   },
   "dependencies": {
     "@supabase/supabase-js": "2.116.0",

@@ -1,7 +1,7 @@
 begin;
 
 create extension if not exists pgtap with schema extensions;
-select plan(13);
+select plan(17);
 
 insert into auth.users (
   id,
@@ -71,11 +71,17 @@ select lives_ok(
   'anonymous account can request a bounded merge ticket'
 );
 
+select throws_ok(
+  $$select * from private.account_merge_tickets$$,
+  '42501', null, 'clients cannot inspect merge ticket hashes'
+);
+reset role;
 select is(
   (select count(*) from private.account_merge_tickets where token_hash = repeat('a', 64)),
   1::bigint,
   'only the ticket hash is persisted'
 );
+set local role authenticated;
 
 select set_config(
   'request.jwt.claims',
@@ -94,11 +100,13 @@ select lives_ok(
   'permanent account can claim the merge ticket'
 );
 
+reset role;
 select is(
   (select target_user_id from private.account_merge_tickets where token_hash = repeat('a', 64)),
   '20000000-0000-4000-8000-000000000002'::uuid,
   'ticket is bound to the authenticated permanent account'
 );
+set local role authenticated;
 select is(
   (select count(*) from public.preference_merge_reviews where user_id = '20000000-0000-4000-8000-000000000002'),
   1::bigint,
@@ -175,6 +183,13 @@ select lives_ok(
   $$select public.request_account_deletion('20000000-0000-4000-8000-000000000021')$$,
   'recently authenticated owner can irreversibly request deletion'
 );
+select is((select count(*) from public.profiles), 0::bigint, 'deleted account cannot read its profile');
+select is((select count(*) from public.privacy_requests), 0::bigint, 'deleted account cannot read lifecycle records');
+select throws_ok(
+  $$update private.account_controls set status = 'active' where user_id = auth.uid()$$,
+  '42501', null, 'client cannot reverse confirmed deletion'
+);
+reset role;
 select is(
   (select status::text from private.account_controls where user_id = '20000000-0000-4000-8000-000000000003'),
   'deletion_pending',

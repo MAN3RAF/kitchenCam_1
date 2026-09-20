@@ -6,15 +6,25 @@ import { failure, json, requestId } from '../_shared/response.ts';
 const privateBuckets = ['scan-raw-private', 'scan-retained-private'] as const;
 
 async function removePrivateObjects(admin: ReturnType<typeof adminClient>, userId: string) {
-  for (const bucket of privateBuckets) {
-    const { data, error } = await admin.storage.from(bucket).list(userId, { limit: 1000 });
-    if (error) throw new FunctionError('ACCOUNT_CLEANUP_PENDING', 503, true);
-    const paths = (data ?? []).filter((item) => item.id).map((item) => `${userId}/${item.name}`);
-    if (paths.length > 0) {
-      const { error: removeError } = await admin.storage.from(bucket).remove(paths);
-      if (removeError) throw new FunctionError('ACCOUNT_CLEANUP_PENDING', 503, true);
+  async function removeFolder(bucket: string, prefix: string): Promise<void> {
+    // Drain the first page repeatedly: offsets would skip objects after deletion.
+    while (true) {
+      const { data, error } = await admin.storage.from(bucket).list(prefix, { limit: 1000 });
+      if (error) throw new FunctionError('ACCOUNT_CLEANUP_PENDING', 503, true);
+      if (!data?.length) return;
+      const paths: string[] = [];
+      for (const item of data) {
+        const path = `${prefix}/${item.name}`;
+        if (item.id) paths.push(path);
+        else await removeFolder(bucket, path);
+      }
+      if (paths.length > 0) {
+        const { error: removeError } = await admin.storage.from(bucket).remove(paths);
+        if (removeError) throw new FunctionError('ACCOUNT_CLEANUP_PENDING', 503, true);
+      }
     }
   }
+  for (const bucket of privateBuckets) await removeFolder(bucket, userId);
 }
 
 Deno.serve(async (request) => {
@@ -31,9 +41,13 @@ Deno.serve(async (request) => {
     if (typeof deletionRequestId !== 'string') throw new FunctionError('INTERNAL', 500, true);
 
     const admin = adminClient();
-    await admin.rpc('internal_mark_account_deletion_processing', {
-      p_request_id: deletionRequestId,
-    });
+    const { error: processingError } = await admin.rpc(
+      'internal_mark_account_deletion_processing',
+      {
+        p_request_id: deletionRequestId,
+      },
+    );
+    if (processingError) throw new FunctionError('ACCOUNT_CLEANUP_PENDING', 503, true);
     await removePrivateObjects(admin, user.id);
 
     const { error: deleteError } = await admin.auth.admin.deleteUser(user.id, false);

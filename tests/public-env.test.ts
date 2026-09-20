@@ -20,3 +20,20 @@ test('configuration rejects unexpected fields and never echoes values', () => {
     }
   }
 });
+
+test('only a Supabase publishable key is accepted in public configuration', () => {
+  for (const key of ['sb_secret_server-value-must-not-ship', 'sk-server-value-must-not-ship']) {
+    expect(() =>
+      parsePublicEnvironment({
+        supabaseUrl: 'http://127.0.0.1:54321',
+        supabasePublishableKey: key,
+      }),
+    ).toThrow('KitchenCam configuration is invalid.');
+  }
+  expect(
+    parsePublicEnvironment({
+      supabaseUrl: 'http://127.0.0.1:54321',
+      supabasePublishableKey: 'sb_publishable_local-test-value',
+    }).supabasePublishableKey,
+  ).toBe('sb_publishable_local-test-value');
+});

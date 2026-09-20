@@ -1,6 +1,6 @@
 # Phase 1 Local Backend and Authentication Foundation
 
-Status: implemented for owner review; runtime database/auth validation is blocked on this workstation until a Docker-compatible runtime is available. This milestone creates no remote or production infrastructure and does not close any Phase 0 gate.
+Status: local backend runtime validation completed on Arch Linux on 2026-09-20; owner review remains required before checkpointing. See [the validation report](BACKEND_VALIDATION.md) for evidence, defects repaired, and remaining gates. No remote or production infrastructure was created, and no Phase 0 gate was closed.
 
 ## Scope implemented
 
@@ -20,12 +20,13 @@ Google and Apple providers are disabled. Their credentials, final app identifier
 2. `20260920010100_identity_rls.sql` forces RLS on every exposed table. Owners can read/update only their active account rows; privacy and merge reviews are read-only to clients.
 3. `20260920010200_private_storage.sql` creates private `scan-raw-private` and `scan-retained-private` buckets with a 10 MiB limit and JPEG/PNG/WebP allowlist. It deliberately grants no client object access.
 4. `20260920010300_account_lifecycle.sql` adds recent-auth deletion, merge-ticket issue/consume/complete, explicit preference resolution, and service-only completion functions.
+5. `20260920010400_runtime_validation_fixes.sql` resolves ambiguous merge columns, checks live Auth identity when issuing/consuming tickets, serializes source claims against upgrades, prevents replacement or upgrade of a claimed source, and permits service-only inspection of minimized deletion records. Original migrations remain unchanged.
 
 Only these foundation entities are created. Scans, ingredients, recipes, nutrition, favorites, community, subscriptions, ads, analytics, quotas, and provider payloads remain absent.
 
 ## Authentication and account lifecycle
 
-The app explores signed out. It creates an anonymous Supabase user only when a future server-backed action calls `ensureGuestSession`. A six-digit code is the primary email flow. An unclaimed email upgrades the anonymous identity through Supabase email change; an existing permanent account uses a 10-minute random merge token whose SHA-256 hash is stored server-side. The token is issued to the authenticated guest and can be consumed only by an authenticated permanent account. Permanent preferences remain authoritative until the user explicitly chooses guest values in an ambiguous preference review.
+The app explores signed out. It creates an anonymous Supabase user only when a future server-backed action calls `ensureGuestSession`. A six-digit code is the primary email flow. An unclaimed email upgrades the anonymous identity through Supabase email change; an existing permanent account uses a 10-minute random merge token whose SHA-256 hash is stored server-side. The token is issued to the authenticated guest and can be consumed only by an authenticated permanent account. The database checks the current Auth identity as well as the JWT; an upgraded source cannot be consumed, and a claimed guest cannot upgrade or replace the ticket during cleanup. Permanent preferences remain authoritative until the user explicitly chooses guest values in an ambiguous preference review.
 
 Email equality alone never authorizes a merge. Merge claim/completion operations are transactionally bound to source and target identities and tolerate bounded retry. The raw token is returned once and retained only as a short-lived pending-auth record in native secure storage (session storage in the non-production web preview), allowing OTP entry or a magic-link app switch to complete the same merge. It is removed after success or expiry.
 
@@ -50,21 +51,25 @@ pnpm backend:start
 pnpm db:reset
 pnpm db:test
 pnpm db:lint
+pnpm backend:test
 pnpm db:types
+pnpm db:types:check
 pnpm check
 pnpm deps:check
-pnpm doctor
+pnpm run doctor
 pnpm export:check
 pnpm backend:stop
 ```
 
-`db:reset` must recreate the database from zero and replay all migrations. `db:test` runs pgTAP schema/RLS/lifecycle/storage denial tests. The still-open local Auth integration check must exercise anonymous sign-in and Inbucket OTP without external delivery once the stack runs. `db:types` writes only after successful CLI output and the generated file must be reviewed/committed with its migration. CI starts the local stack and requires a clean generated-type diff.
+`db:reset` recreates the database from zero and replays all five migrations. `db:test` runs 71 pgTAP schema/RLS/lifecycle/storage assertions. `backend:test` runs ten local-only integration tests using real anonymous/permanent sessions, captured six-digit email OTP, Edge Functions, populated private buckets, and account cleanup. Local email confirmation is enabled; the pinned CLI uses Mailpit behind its Inbucket-compatible URL. `db:lint` fails on warnings or errors. `db:types` writes only after successful CLI output; `db:types:check` verifies byte-for-byte schema consistency without writing. CI also requires that the generated file is tracked and unchanged.
 
-On 2026-09-20, mobile TypeScript, lint, formatting, Jest, and static boundary/security tests pass. The runtime commands above cannot yet execute because this Windows host has no Docker-compatible runtime. Consequently database replay, pgTAP, storage access, live local Auth, database lint, Edge runtime, and generated-type verification remain open and must not be described as passing.
+After function edits, run `pnpm backend:functions` in another terminal before runtime tests. Deno checks should finish before runtime tests because creating a lockfile triggers the function watcher to restart. Runtime tests use disposable local fixtures and never read remote project credentials. Native secure-store hardware and actual app deep-link handling require device validation.
+
+The former Windows Docker blocker is resolved. Database replay, pgTAP, storage denial, live Auth, Edge Function runtime, database lint, and generated-schema comparison have passed locally. The detailed report records the remaining native/remote gates and the owner-controlled Git checkpoint requirement.
 
 ## Still open
 
-- Docker-backed runtime validation and generated database types.
+- Owner review and checkpoint, including the newly generated database types and Deno dependency lockfile.
 - Remote development Supabase project/region, staging/production projects, production secrets, SMTP, backup/restore, alerts, and named operational owners.
 - Google Cloud and Apple Developer credentials plus final iOS/Android identifiers.
 - Real-device secure storage, deep-link, OTP, VoiceOver/TalkBack, Android/iOS signed build, and provider sign-in validation.

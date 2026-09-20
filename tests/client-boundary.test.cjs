@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { Buffer } = require('node:buffer');
 const path = require('node:path');
 const test = require('node:test');
 const { assertClientModule, assertPublicEnvironment } = require('../tooling/client-boundary.cjs');
@@ -41,5 +42,22 @@ test('app config exports no environment object or server-only sentinel', () => {
   } finally {
     if (previous === undefined) delete process.env.KITCHENCAM_TEST_SERVER_SENTINEL;
     else process.env.KITCHENCAM_TEST_SERVER_SENTINEL = previous;
+  }
+});
+
+test('a server credential cannot be mislabeled as the public Supabase key', () => {
+  for (const key of [
+    'sb_secret_server-value-must-not-ship',
+    `eyJhbGciOiJIUzI1NiJ9.${Buffer.from(JSON.stringify({ role: 'service_role' })).toString('base64url')}.signature`,
+    'sk-server-value-must-not-ship',
+  ]) {
+    assert.throws(
+      () =>
+        assertPublicEnvironment({
+          EXPO_PUBLIC_SUPABASE_URL: 'http://127.0.0.1:54321',
+          EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: key,
+        }),
+      (error) => !error.message.includes(key),
+    );
   }
 });

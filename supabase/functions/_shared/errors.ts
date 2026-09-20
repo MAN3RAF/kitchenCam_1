@@ -18,6 +18,7 @@ export function mapUnknownError(error: unknown): FunctionError {
       'ANONYMOUS_ACCOUNT_REQUIRED',
       'AUTH_REQUIRED',
       'MERGE_SOURCE_NOT_ACTIVE',
+      'MERGE_SOURCE_CLAIMED',
       'MERGE_TARGET_INVALID',
       'MERGE_TICKET_ALREADY_CLAIMED',
       'MERGE_TICKET_INVALID',

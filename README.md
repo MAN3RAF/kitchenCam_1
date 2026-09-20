@@ -11,7 +11,7 @@ pnpm install --frozen-lockfile
 pnpm web
 pnpm check
 pnpm deps:check
-pnpm doctor
+pnpm run doctor
 pnpm export:check
 ```
 
@@ -25,11 +25,15 @@ pnpm backend:status
 pnpm db:reset
 pnpm db:test
 pnpm db:lint
+pnpm backend:test
 pnpm db:types
+pnpm db:types:check
 pnpm backend:stop
 ```
 
-Local email is captured by Supabase Inbucket; it is not delivered externally. `db:types` replaces `src/types/database.generated.ts` only after successful generation. This workstation still needs a compatible container runtime before those runtime checks can close.
+Local email is captured by the CLI email service (currently Mailpit at the Inbucket-compatible local URL); it is not delivered externally. `db:types` replaces `src/types/database.generated.ts` only after successful generation. `db:types:check` compares a fresh generation without changing the file. Local runtime validation is recorded in [the backend validation report](docs/BACKEND_VALIDATION.md).
+
+`backend:start` starts the Edge runtime. After editing functions, run `pnpm backend:functions` in a separate terminal to reload and watch them before running `pnpm backend:test`. Avoid changing function files or generating the Deno lockfile while runtime tests are in progress.
 
 `pnpm start` serves an installed Expo development client. `pnpm android` / `pnpm ios` open that client on a configured emulator/simulator. These commands do not build or sign a client. Native SDK/signing setup is still required for device validation. The browser preview is a layout aid, not proof of native behavior.
 

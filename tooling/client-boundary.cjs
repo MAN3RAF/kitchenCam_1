@@ -20,6 +20,10 @@ function assertPublicEnvironment(environment) {
       'Unapproved EXPO_PUBLIC_* variable. Review the public configuration allowlist.',
     );
   }
+  const key = environment.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+  if (key && (key.length < 20 || !/^sb_publishable_[A-Za-z0-9_-]+$/.test(key))) {
+    throw new Error('Supabase client configuration requires a publishable key.');
+  }
 }
 
 function assertClientModule(projectRoot, filePath) {
