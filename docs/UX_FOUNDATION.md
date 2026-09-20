@@ -1,6 +1,7 @@
 # KitchenCam UX Foundation
 
-Status: Phase 0 low-fidelity foundation; no components or application code exist.  
+Status: approved Phase 0 low-fidelity baseline; Phase 1 shared primitives and the five-tab shell are implemented. Core-flow prototypes and representative-user validation remain open.
+
 Checked: 2026-09-19
 
 ## Design rationale

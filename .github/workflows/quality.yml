@@ -1,0 +1,38 @@
+name: Mobile foundation
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: '1'
+      EXPO_NO_TELEMETRY: '1'
+      EXPO_PUBLIC_APP_ENV: development
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - uses: pnpm/action-setup@v6
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm deps:check
+      - run: pnpm doctor
+      - run: pnpm export:check
+      - run: pnpm check
+      - run: pnpm backend:start
+      - run: pnpm db:reset
+      - run: pnpm db:test
+      - run: pnpm db:lint
+      - run: pnpm db:types
+      - run: git ls-files --error-unmatch src/types/database.generated.ts
+      - run: git diff --exit-code -- src/types/database.generated.ts
+      - if: always()
+        run: pnpm backend:stop

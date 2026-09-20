@@ -47,6 +47,8 @@ The mobile app never receives OpenAI, USDA, recipe-provider, Supabase service-ro
 
 ## Mobile architecture
 
+The approved Phase 1 mobile foundation is now implemented; see `ENGINEERING_FOUNDATION.md` for the current file tree and route reservations. It has no API consumers or persistence yet, so TanStack Query and Zustand remain deferred until needed. The five mobile tabs use native tabs and native stacks; the web-only layout is a development preview, not a new launch platform.
+
 Expo Router route files should stay thin: route parameters, screen composition, and navigation only. Features own UI, domain types, hooks, validation, and service adapters. Shared components expose explicit variants or compound APIs rather than accumulating behavior flags.
 
 Server state belongs in TanStack Query. Authentication state belongs to the Supabase session provider. Short-lived form and interaction state stays local. A scan draft may use one narrowly scoped provider/store because camera, confirmation, and results span routes. Derived state is computed rather than synchronized through effects.
@@ -54,6 +56,8 @@ Server state belongs in TanStack Query. Authentication state belongs to the Supa
 Long recipe/review/history lists use virtualization, stable item components, cached image dimensions, and `expo-image`. Navigation uses native stacks and platform-correct tabs. Native ads are list item types, not arbitrary overlays. Camera, purchase, and ad SDKs require development builds; Expo Go is insufficient.
 
 ## Backend architecture
+
+The approved local identity foundation is implemented in `supabase/`: forward migrations, explicit grants/RLS, private scan buckets with no client object policies, and JWT-verified Edge Functions for merge-ticket issuance, account merge, and account deletion. The mobile client supports lazy anonymous sessions and six-digit email OTP/magic-link callbacks using only a publishable key. Runtime replay and integration tests remain open until a Docker-compatible runtime is available; no remote project exists. See `BACKEND_FOUNDATION.md`.
 
 The backend has two access paths:
 

@@ -123,4 +123,6 @@ Errors use active, specific copy: what failed, whether edits are safe, and what 
 
 ## Design validation
 
+Phase 1 implementation uses system type and semantic light/dark tokens in `src/theme/tokens.ts`. The light action green is darkened to `#087447` for white-text contrast; automated contrast tests cover both themes. This is a contrast adjustment within the approved direction. Native accessibility and core-flow usability validation remain open; see `ENGINEERING_FOUNDATION.md`.
+
 Before implementation approval, produce low-fidelity flows for capture/confirm/search/cook/paywall/restore/error states and test them with representative users. Before release, test small phone, large phone, landscape, largest text, reduced motion, light/dark themes, VoiceOver/TalkBack, weak network, one-handed use, and cooking-context glare/wet-hand constraints.

@@ -1,0 +1,2 @@
+-- Local and CI environments intentionally start without application data.
+-- Authentication integration tests create isolated synthetic users and remove them.

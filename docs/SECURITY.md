@@ -12,6 +12,8 @@ Status: approved MVP engineering baseline; final legal/privacy/nutrition review 
 
 ## Trust boundaries and secrets
 
+The Phase 1 shell enforces a public environment-name allowlist, Zod validation, explicit Expo app-config output, lint restrictions, and a Metro resolver boundary for local server/build-only modules. The local backend adds explicit grants, forced RLS, denial-by-default private storage, JWT-verified Edge Functions, safe correlation IDs, and redacted structured logs. See `ENGINEERING_FOUNDATION.md` and `BACKEND_FOUNDATION.md`. Runtime RLS/storage/auth evidence remains open until the local Docker-compatible stack can run; provider integrations remain unimplemented.
+
 The shipped app is untrusted. Decompilation, local storage inspection, proxying, rooted devices, and forged requests are expected. Public identifiers in the app are scoped accordingly.
 
 Server secret stores hold all AI provider keys, including any OpenAI key, plus the Supabase service-role/secret key, USDA and recipe-provider keys, RevenueCat webhook/API secret, moderation credentials, and Sentry source-map token. EAS secret variables are used only at build/release time and never copied into `EXPO_PUBLIC_*`. Rotate by environment, owner, and purpose; audit access; never log values.
@@ -20,11 +22,11 @@ The Supabase publishable key is intentionally distributable but grants no author
 
 ## Authentication and authorization
 
-- Recommend Supabase anonymous auth for guest continuity, email OTP/magic link rather than password storage burden, Google, and Sign in with Apple on iOS.
+- Use lazy Supabase anonymous auth for guest continuity and six-digit email OTP as the primary mobile experience; retain a strict allowlisted magic-link callback. Google and Sign in with Apple remain disabled until credentials and final identifiers are approved.
 - Store sessions with platform secure storage and follow refresh/revocation behavior.
 - Require recent authentication for account deletion, identity changes, and other destructive account actions.
 - Treat anonymous users as `authenticated` with an `is_anonymous` claim; restrictive policies prevent public posting and other abuse-prone operations.
-- Define guest-to-existing-account conflict rules before enabling linking. Never merge accounts only because the client supplies an email.
+- Guest-to-existing-account linking uses a short-lived, random, hash-at-rest merge ticket bound to both authenticated users. Permanent values win direct conflicts, safe set-like data may be unioned in later schemas, and ambiguous preferences require explicit review. Never merge accounts only because email addresses match.
 - Derive object ownership from verified JWT claims. Test grants and RLS for anonymous, authenticated owner, authenticated non-owner, moderator, and service roles.
 
 Apple's review rules make an equivalent privacy-preserving login option relevant when Google login is offered. Supabase supports anonymous users and identity linking, but automatic cleanup is not provided; schedule verified cleanup for abandoned anonymous accounts.

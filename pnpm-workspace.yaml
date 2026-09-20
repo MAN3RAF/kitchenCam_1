@@ -1,0 +1,8 @@
+packages:
+  - '.'
+nodeLinker: hoisted
+allowBuilds:
+  unrs-resolver: true
+overrides:
+  react-native-worklets: 0.10.1
+  '@react-native/metro-config': 0.86.3

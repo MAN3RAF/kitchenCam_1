@@ -1,6 +1,6 @@
 # KitchenCam Database Design
 
-Status: approved logical MVP baseline. No migrations have been created.
+Status: approved logical MVP baseline. The identity/preferences/privacy subset now has local forward migrations; later domain tables remain designs only.
 
 ## Principles
 
@@ -23,6 +23,8 @@ Status: approved logical MVP baseline. No migrations have been created.
 | `privacy_requests` | export/delete request lifecycle and audit timestamps, without retaining deleted content |
 
 Anonymous Supabase users use the authenticated database role but are distinguished by the JWT `is_anonymous` claim. Restrictive policies prevent anonymous accounts from posting reviews or other abuse-prone public content.
+
+Implemented foundation tables are `profiles`, `user_preferences`, `privacy_requests`, `preference_merge_reviews`, and private `account_controls`, `account_merge_tickets`, and `account_merge_events`. The implemented profile/preferences columns are intentionally smaller than the full logical model above. Allergy, diet, device, avatar, scan, recipe, community, billing, and quota data remain deferred until their milestones. See `BACKEND_FOUNDATION.md` for exact migrations and current runtime-validation status.
 
 ## Ingredients and scanning
 

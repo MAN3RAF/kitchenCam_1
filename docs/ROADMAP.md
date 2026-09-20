@@ -1,6 +1,6 @@
 # KitchenCam Delivery Roadmap
 
-Status: approved MVP planning baseline. Implementation remains blocked pending Phase 0 research and explicit authorization to begin Phase 1.
+Status: approved MVP planning baseline. The owner authorized the Phase 1 mobile foundation on 2026-09-19 and the local backend/authentication foundation on 2026-09-20. Phase 0 is NOT fully closed; all blocked gates below remain visible and unresolved. Authorization does not extend to the camera-to-recipe slice or production integrations.
 
 ## Phase 0 - decisions, contracts, and risk spikes
 
@@ -32,9 +32,13 @@ Phase 1 may prepare repository/tooling foundations after explicit owner approval
 
 ## Phase 1 - engineering foundation
 
+Implemented scope: mobile shell, strict TypeScript, Expo Router, semantic UI primitives, public configuration boundaries, local Supabase migrations, identity RLS, private storage denial-by-default, local email/anonymous auth flows, account merge/deletion functions, and CI definitions. See `ENGINEERING_FOUNDATION.md` and `BACKEND_FOUNDATION.md`. No remote Supabase project, production credentials, social provider credentials, or production integrations exist.
+
+Local database replay, pgTAP/RLS/storage tests, local auth integration, database lint, and generated database-type verification remain open because this workstation has no Docker-compatible runtime. CI is configured to run them. Native signed builds and hosted CI evidence also remain open.
+
 - Initialize Expo only after owner approval, then establish strict TypeScript, Expo Router, development builds, environments, CI, lint/type/test scripts, and design tokens.
-- Create separate Supabase development/staging/production projects, migrations, RLS tests, storage buckets, secrets, and backup policy.
-- Implement auth/guest/account-linking foundations and privacy controls.
+- Create separate remote Supabase development/staging/production projects, production secret ownership, and backup policy only after their deferred owner inputs are available. Local migrations, RLS tests, and private buckets are implemented.
+- Complete real-device auth validation plus Google/Apple provider setup after identifiers and provider credentials are approved. Anonymous, email OTP/magic-link, guest merge, and irreversible deletion foundations are implemented locally.
 - Establish API contracts, typed errors, request IDs, logging redaction, Sentry, analytics consent, and feature/ad policy configuration.
 
 Exit gate: signed development builds on iOS/Android, CI green, no secrets in bundles, RLS denial tests pass.

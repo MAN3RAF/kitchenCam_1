@@ -4,6 +4,8 @@ node_modules/
 # Expo and React Native
 .expo/
 .expo-shared/
+expo-env.d.ts
+.pnpm-store/
 dist/
 web-build/
 android/

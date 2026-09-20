@@ -1,0 +1,10 @@
+.agents/
+.expo/
+node_modules/
+dist/
+coverage/
+pnpm-lock.yaml
+docs/
+AGENTS.md
+expo-env.d.ts
+src/types/database.generated.ts
