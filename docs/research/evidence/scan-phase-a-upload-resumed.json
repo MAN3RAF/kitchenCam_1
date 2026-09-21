@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-09-21T19:14:40.401Z",
+  "runtime": {
+    "node": "v24.19.0"
+  },
+  "scope": "local-only; synthetic bytes; unchanged policies",
+  "observations": [
+    {
+      "name": "sdk_overwrite_rejected_and_bytes_unchanged",
+      "status": 400,
+      "unchanged": true
+    },
+    {
+      "name": "sdk_concurrent_put_one_winner",
+      "statuses": [
+        400,
+        200
+      ],
+      "winnerBytesVerified": true
+    },
+    {
+      "name": "s3_signed_mime_length_condition_same_size_overwrite",
+      "status": 200,
+      "changed": true
+    },
+    {
+      "name": "s3_concurrent_conditional_put_both_accepted",
+      "statuses": [
+        200,
+        200
+      ]
+    },
+    {
+      "name": "sdk_bucket_substitution_denied",
+      "status": 400
+    },
+    {
+      "name": "s3_bucket_substitution_denied",
+      "status": 403
+    }
+  ],
+  "cleanup": {
+    "objectsRemoved": true,
+    "identityRemoved": true
+  }
+}

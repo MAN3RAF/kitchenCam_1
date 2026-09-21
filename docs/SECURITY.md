@@ -12,7 +12,7 @@ Status: approved MVP engineering baseline; final legal/privacy/nutrition review 
 
 ## Trust boundaries and secrets
 
-The Phase 1 shell enforces a public environment-name allowlist, Zod validation, explicit Expo app-config output, lint restrictions, and a Metro resolver boundary for local server/build-only modules. The local backend adds explicit grants, forced RLS, denial-by-default private storage, JWT-verified Edge Functions, safe correlation IDs, and redacted structured logs. See `ENGINEERING_FOUNDATION.md` and `BACKEND_FOUNDATION.md`. Runtime RLS/storage/auth evidence remains open until the local Docker-compatible stack can run; provider integrations remain unimplemented.
+The Phase 1 shell enforces a public environment-name allowlist, Zod validation, explicit Expo app-config output, lint restrictions, and a Metro resolver boundary for local server/build-only modules. The local backend adds explicit grants, forced RLS, denial-by-default private storage, JWT-verified Edge Functions, safe correlation IDs, and redacted structured logs. See `ENGINEERING_FOUNDATION.md` and `BACKEND_FOUNDATION.md`. Local RLS/storage/auth evidence is recorded in `BACKEND_VALIDATION.md`; provider integrations remain unimplemented.
 
 The shipped app is untrusted. Decompilation, local storage inspection, proxying, rooted devices, and forged requests are expected. Public identifiers in the app are scoped accordingly.
 
@@ -39,7 +39,7 @@ Apple's review rules make an equivalent privacy-preserving login option relevant
 - Separate scan images, review quarantine, approved public review images, and licensed recipe media into buckets with different policies.
 - Do not put photo URLs, ingredients, faces, addresses, barcodes, or raw AI prompts in analytics or crash breadcrumbs.
 - Detect and handle non-food/unsupported images; add abuse controls and a process for illegal-content reports.
-- Automatically delete raw scan photos within 24 hours after successful recognition.
+- Automatically delete raw/transient scan photos within 24 hours of first upload, including failure, cancellation and abandonment; retries do not extend the deadline.
 - Store detected ingredients/results, not the original image, in scan history by default. Opt-in image retention creates a separately processed, metadata-free derivative; the raw upload is still deleted.
 
 OpenAI API data is not used for model training by default, but default abuse-monitoring logs may retain content for up to 30 days and image inputs have special retention caveats. The privacy notice must name this processing and legal should assess Modified Abuse Monitoring/Zero Data Retention eligibility ([OpenAI data controls](https://platform.openai.com/docs/models/default-usage-policies-by-endpoint)).
@@ -103,3 +103,9 @@ Launch markets determine GDPR/UK GDPR, CCPA/CPRA, Moroccan and other local oblig
 ## Incident readiness
 
 Maintain severity levels, owners, paging, provider contacts, key-rotation playbooks, user-notification/legal assessment, and an audit trail. Alert on error/latency/cost thresholds, entitlement mismatch, elevated auth failures, queue backlog, moderation backlog, and unusual storage egress. Run a tabletop incident and restore exercise before launch.
+
+## Phase A scan review
+
+[The Phase A report](research/SCAN_PHASE_A.md) records local expiry, replay, overwrite, cross-user and deletion findings plus the bounded sanitizer corpus. Private bucket denial passed; service-issued bearer uploads still bypass live user deletion checks. Object deletion is not upload-capability revocation. The owner-approved authenticated bounded ingress must bind authorization to a live owner and revision, consume it atomically, enforce the real ten-minute deadline and byte cap, restrict type and request/body size, support idempotent reconciliation/cleanup, and fence in-flight completion on cancellation/deletion. The SDK two-hour upload capability and direct S3 presigned PUT are excluded as the final security boundary. Sanitizer approval binds immutable bytes/digest, not a mutable object path. These controls and retention workers are requirements, not deployed safeguards.
+
+Metadata removal does not remove visible faces, documents or other sensitive pixels. The UX must disclose processing and permit preview/retake/manual entry; no household uploads are authorized while recognition is unavailable. No real provider received any image in Phase A.

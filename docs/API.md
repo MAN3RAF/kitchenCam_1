@@ -34,17 +34,13 @@ Stable categories: `VALIDATION`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `C
 
 ## Scan and upload endpoints
 
-| Method and path | Purpose |
-|---|---|
-| `POST /v1/scan-uploads` | Validate quota/metadata; create scan and signed private upload target |
-| `POST /v1/scans/{scanId}/recognize` | Verify uploaded object and enqueue idempotent recognition |
-| `GET /v1/scans/{scanId}` | Return status, safe progress, detections, or typed failure |
-| `PUT /v1/scans/{scanId}/ingredients` | Replace confirmed ingredient draft with validated user edits |
-| `DELETE /v1/scans/{scanId}` | Delete scan data/media under retention rules |
+The reviewed Phase A [scan contracts](research/SCAN_CONTRACTS.md) supersede the earlier combined upload/creation draft. They define separate creation, manual creation, upload authorization, upload completion/sanitization, recognition, status, photo revision, manual fallback, draft edit, explicit confirmation, cancellation and deletion operations. Strict executable schemas and a provider-neutral recognition port live only in research tooling; **no scan endpoint is implemented**.
 
-`POST /scan-uploads` accepts MIME, byte count, dimensions, and source, and returns a scan ID, object token/target, expiry, and limits. Upload bytes go directly to storage. Recognition normally returns `202 Accepted`; polling may use bounded backoff or a Realtime status channel.
+Durable states are `awaiting_upload`, `sanitizing`, `queued`, `recognizing`, `needs_confirmation`, `confirmed`, `failed`, `cancelled`, and `expired`. Recognition requires verified sanitized bytes bound to the current revision. Manual entry consumes no scan quota and needs no image. No household photo is uploaded while recognition is unavailable.
 
-Scan states: `awaiting_upload`, `uploaded`, `queued`, `processing`, `needs_confirmation`, `completed`, `failed`, `cancelled`, `expired`. Detection items expose `likely` or `uncertain`, not probability percentages. After successful processing, raw scan media is always scheduled for deletion within 24 hours. When image retention is explicitly enabled, the service creates a separate metadata-free history derivative.
+The owner approved authenticated bounded upload ingress: the [local security spike](research/SCAN_PHASE_A.md) found that SDK capabilities last two hours, and ten-minute S3 capabilities permit overwrite/replay. A response claiming a shorter lifetime cannot repair that. The approved ingress must enforce authenticated ownership, one-use authorization, bounded request/body size, type restrictions, target binding, cancellation/account-deletion fencing, idempotency/reconciliation and cleanup. Neither the SDK two-hour capability nor direct S3 presigned PUT is the KitchenCam security boundary. The ingress is not implemented; production hosting/runtime selection and deployment remain unresolved and unauthorized.
+
+Raw/transient images must be deleted within 24 hours of first upload, including failures/abandonment, preferably earlier. History defaults to ingredients/results; explicit retention uses a separate sanitized derivative. Versioning, idempotency, safe errors and privacy boundaries are defined in the linked contract.
 
 ## Recipe endpoints
 

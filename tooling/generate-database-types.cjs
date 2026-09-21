@@ -38,8 +38,11 @@ if (!result.stdout.includes('export type Database')) {
   process.exit(1);
 }
 
+// CLI releases can emit an extra blank line; keep one canonical final newline.
+const generated = `${result.stdout.trimEnd()}\n`;
+
 if (process.argv.includes('--check')) {
-  if (!existsSync(target) || readFileSync(target, 'utf8') !== result.stdout) {
+  if (!existsSync(target) || readFileSync(target, 'utf8') !== generated) {
     process.stderr.write('Database types differ from the local schema. Run pnpm db:types.\n');
     process.exit(1);
   }
@@ -49,7 +52,7 @@ if (process.argv.includes('--check')) {
 
 mkdirSync(path.dirname(target), { recursive: true });
 try {
-  writeFileSync(temporaryTarget, result.stdout, 'utf8');
+  writeFileSync(temporaryTarget, generated, 'utf8');
   renameSync(temporaryTarget, target);
 } finally {
   rmSync(temporaryTarget, { force: true });

@@ -57,7 +57,7 @@ Long recipe/review/history lists use virtualization, stable item components, cac
 
 ## Backend architecture
 
-The approved local identity foundation is implemented in `supabase/`: forward migrations, explicit grants/RLS, private scan buckets with no client object policies, and JWT-verified Edge Functions for merge-ticket issuance, account merge, and account deletion. The mobile client supports lazy anonymous sessions and six-digit email OTP/magic-link callbacks using only a publishable key. Runtime replay and integration tests remain open until a Docker-compatible runtime is available; no remote project exists. See `BACKEND_FOUNDATION.md`.
+The approved local identity foundation is implemented in `supabase/`: forward migrations, explicit grants/RLS, private scan buckets with no client object policies, and JWT-verified Edge Functions for merge-ticket issuance, account merge, and account deletion. The mobile client supports lazy anonymous sessions and six-digit email OTP/magic-link callbacks using only a publishable key. Local runtime replay and integration tests passed as recorded in `BACKEND_VALIDATION.md`; no remote project exists. See `BACKEND_FOUNDATION.md`.
 
 The backend has two access paths:
 
@@ -70,15 +70,13 @@ Keep normalization, ranking, quota, safety, entitlement, and provider-port logic
 
 ## Image upload and storage
 
-1. The app checks type and size, corrects orientation, downsizes to the agreed maximum dimension, and removes location/EXIF metadata.
-2. `POST /v1/scan-uploads` creates a scan ID and short-lived signed upload target after auth, quota, and consent checks.
-3. The app uploads bytes directly to a private `scan-images` bucket; image bytes do not traverse the BFF.
-4. `POST /v1/scans/{id}/recognize` verifies ownership and object metadata, then queues recognition idempotently.
-5. The worker reads the private object, invokes the AI provider, stores structured detections, and schedules raw-image deletion within 24 hours after successful processing.
-6. Scan history stores detected ingredients/results by default, not the original image. If image retention is explicitly enabled, retain a separately processed, metadata-free history derivative; the raw upload is still deleted.
-7. Review photos are deferred to version 1.1 and will use a separate quarantine bucket and moderation pipeline. Recipe-provider images are referenced or cached only as the license permits.
+The [Phase A scan contracts](research/SCAN_CONTRACTS.md) and [runtime/security evidence](research/SCAN_PHASE_A.md) refine this previously unimplemented path. The owner provisionally approved a 25 MiB source / 12 MP full-decode ceiling, upright metadata-free prepared JPEG with a long edge no greater than 2048 px and a 4 MiB byte cap. The existing storage hard ceiling remains unchanged. The 12 MP ceiling is an engineering safety limit, not a permanent product requirement: physical Android/device testing may justify a revision if bounded downsampling safely handles larger images. Native-device validation is not complete.
 
-Bucket policy restricts paths to an immutable owner prefix, MIME allowlist, and maximum size. Never trust file extensions alone. Signed URLs are short-lived; deletion, not URL expiry, is the revocation mechanism.
+Create the scan separately from upload authorization. Verify active ownership, notice, limits and processing availability before issuing an upload. Complete-upload verification queues sanitization; recognition can use only immutable sanitizer-approved bytes for the same revision. Provider references, storage paths and upload capabilities stay out of public scan status and navigation.
+
+**Owner-approved architecture:** authenticated bounded upload ingress plus an isolated Node + Sharp/libvips sanitizer worker. Decoding/re-encoding must use enforceable process/OS resource limits. Supabase retains auth, private Storage and durable state; Edge Functions handle appropriate lightweight authentication, admission and coordination, not heavy sanitization. Production hosting/runtime selection remains unresolved; provisioning is not authorized. This changes the original direct-to-Storage upload assumption. The tested SDK mechanism fails the ten-minute expiry requirement; the tested S3 mechanism expires but permits overwrite, including signed conditional requests. Deleting an object does not revoke either upload capability, and both remain usable after Auth deletion. Neither is approved as the product upload mechanism.
+
+Raw/transient media expires within 24 hours of first upload, with earlier cleanup after approval/rejection/cancellation. Jobs must be fenced on account/scan deletion; late writes require a durable cleanup inventory. History stores ingredients/results by default. Explicitly retained photos use separate sanitized derivatives. Review photos remain version 1.1; licensed recipe media follows its separate rights policy. No scan ingress, sanitizer service, storage policy, retention job or AI integration was deployed in Phase A.
 
 ## AI ingredient-recognition pipeline
 
@@ -173,7 +171,7 @@ The UI preserves user edits after failures, offers a concrete next action, and n
 
 ## Performance strategy
 
-- Resize photos before upload and upload directly to storage.
+- Resize photos before upload; use the owner-approved bounded ingress architecture recorded in Phase A.
 - Parallelize independent provider/database work; avoid request waterfalls.
 - Cache normalized ingredient and recipe-provider lookups within licensing terms.
 - Virtualize result/review/history lists and memoize only measured expensive item work.

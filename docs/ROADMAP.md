@@ -1,6 +1,6 @@
 # KitchenCam Delivery Roadmap
 
-Status: approved MVP planning baseline. The owner authorized the Phase 1 mobile foundation on 2026-09-19 and the local backend/authentication foundation on 2026-09-20. Phase 0 is NOT fully closed; all blocked gates below remain visible and unresolved. Authorization does not extend to the camera-to-recipe slice or production integrations.
+Status: approved MVP planning baseline. The owner authorized the Phase 1 mobile foundation on 2026-09-19 and the local backend/authentication foundation on 2026-09-20. Phase 0 is NOT fully closed; all blocked gates below remain visible and unresolved. The separately approved Camera + Ingredient Scan Journey **Phase A** covers contracts, UX/security review and local runtime spikes only; see [its evidence report](research/SCAN_PHASE_A.md). Owner review approved bounded authenticated ingress, an isolated Node + Sharp/libvips sanitizer with enforceable process/OS limits, and provisional preparation ceilings. Production hosting/runtime selection and native-device validation remain open. Phase B, the camera-to-recipe implementation and production integrations remain unauthorized.
 
 ## Phase 0 - decisions, contracts, and risk spikes
 
@@ -34,7 +34,7 @@ Phase 1 may prepare repository/tooling foundations after explicit owner approval
 
 Implemented scope: mobile shell, strict TypeScript, Expo Router, semantic UI primitives, public configuration boundaries, local Supabase migrations, identity RLS, private storage denial-by-default, local email/anonymous auth flows, account merge/deletion functions, and CI definitions. See `ENGINEERING_FOUNDATION.md` and `BACKEND_FOUNDATION.md`. No remote Supabase project, production credentials, social provider credentials, or production integrations exist.
 
-Local database replay, pgTAP/RLS/storage tests, local auth integration, database lint, and generated database-type verification remain open because this workstation has no Docker-compatible runtime. CI is configured to run them. Native signed builds and hosted CI evidence also remain open.
+Local database replay, pgTAP/RLS/storage tests, local auth integration, database lint, and generated database-type verification passed; see [BACKEND_VALIDATION.md](BACKEND_VALIDATION.md). CI is configured to run them. Native signed builds and hosted CI evidence also remain open.
 
 - Initialize Expo only after owner approval, then establish strict TypeScript, Expo Router, development builds, environments, CI, lint/type/test scripts, and design tokens.
 - Create separate remote Supabase development/staging/production projects, production secret ownership, and backup policy only after their deferred owner inputs are available. Local migrations, RLS tests, and private buckets are implemented.

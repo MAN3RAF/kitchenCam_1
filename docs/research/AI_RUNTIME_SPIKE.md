@@ -1,6 +1,6 @@
 # Supabase AI Runtime Spike Design
 
-Status: architecture review complete; load/fault spike remains pending.  
+Status: architecture review complete; AI queue/provider load/fault spike remains pending. The separate [scan Phase A report](SCAN_PHASE_A.md) completes local upload and image-sanitizer spikes; it does not close this AI-runtime gate.
 Checked: 2026-09-19
 
 ## Finding

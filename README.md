@@ -41,6 +41,7 @@ Local email is captured by the CLI email service (currently Mailpit at the Inbuc
 
 - [Foundation implementation and route reservations](docs/ENGINEERING_FOUNDATION.md)
 - [Local backend and authentication foundation](docs/BACKEND_FOUNDATION.md)
+- [Camera/scan Phase A contracts and local security/runtime evidence](docs/research/SCAN_PHASE_A.md)
 - [Roadmap and blocked gates](docs/ROADMAP.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Design and accessibility](docs/UX_FOUNDATION.md)
