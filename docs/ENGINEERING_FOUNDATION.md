@@ -57,16 +57,17 @@ tooling/                     Build-only client boundary policy
 .github/workflows/           Credential-free quality checks
 ```
 
-No empty directories, provider stubs, generated recipes, account sessions, scan quotas, entitlements, or API clients were added. The screens explicitly state unavailable functionality; disabled scanning never requests camera permission.
+The original mobile foundation added no provider stubs, generated recipes, scan quotas, or entitlements. Subsequent auth/backend work added sessions and account clients. Phase C adds `app/scans/` and `src/features/scans/` for the real manual ingredient workflow; Home now opens it. Photo recognition remains explicitly unavailable and never requests camera permission.
 
 ## Route reservations
 
-The root native Stack can host future flows independently of tab stacks. Reserve these paths in future tasks; no route files or links currently pretend they exist:
+The root native Stack hosts flows independently of tab stacks. Implemented paths and remaining reservations are:
 
 | Future route | Placement / responsibility |
 |---|---|
 | `(auth)/sign-in`, `(auth)/verify`, `(auth)/callback`, `(auth)/review-preferences`, `(auth)/delete-account` | Implemented local email/guest/account lifecycle routes; social sign-in remains deferred |
-| `scans/index`, `scans/[id]/confirm`, `scans/[id]/results` | Root stack; Home is the primary entry; no persistent scan tab |
+| `scans/index`, `scans/manual`, `scans/[id]/index`, `scans/[id]/confirm`, `scans/[id]/ready` | Implemented Phase C manual journey in a root stack; Home is the primary entry; no persistent scan tab |
+| `scans/[id]/results` | Future recipe behavior; no route or active link |
 | `recipes/[id]`, `recipes/[id]/nutrition`, `recipes/[id]/cook` | Shared root stack; open from Recipes/Saved/Community; preserve return route |
 | `settings/index`, `settings/privacy` | Root stack, future Profile entry |
 | `subscription/index`, `subscription/restore` | Root modal stack; purchases remain account-optional |
@@ -91,7 +92,7 @@ Unknown `EXPO_PUBLIC_*` names fail configuration/bundling without logging their 
 
 Future server-only configuration belongs to independently deployed backend functions/workers, outside `src/`, and to their secret managers. Future public service identifiers require a reviewed allowlist/schema change. `.env*` is ignored except `.env.example`; native signing files, local service files, caches, build outputs, and generated route types are ignored.
 
-Supabase Auth session persistence uses platform SecureStore on native and session storage in the web development preview. The current profile/preference reads are small identity operations; TanStack Query will be introduced with the first broader server-state feature. Zustand remains deferred until a concrete cross-route transient flow warrants it. No offline recipe availability is implied.
+Supabase Auth session persistence uses platform SecureStore on native and session storage in the web development preview. Phase C introduces TanStack Query for manual scan reads, plus account-scoped in-memory editors for temporary input and conflict recovery. Server acknowledgements alone establish saved/confirmed state. UUID generation uses the SDK-compatible Expo Crypto module. Zustand and disk-persisted scan caches remain absent. No offline recipe availability is implied.
 
 ## Validation commands
 

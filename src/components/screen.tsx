@@ -26,6 +26,7 @@ export function Screen({ children }: PropsWithChildren) {
           {
             paddingLeft: Math.max(gutter, insets.left),
             paddingRight: Math.max(gutter, insets.right),
+            paddingBottom: spacing.xxl + insets.bottom,
           },
         ]}
       >

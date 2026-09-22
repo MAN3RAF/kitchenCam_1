@@ -18,6 +18,8 @@ Google and Apple providers are disabled. Their credentials, final app identifier
 
 ## Migration order
 
+Phase C now consumes the reviewed manual creation/edit/confirmation RPCs from the app, without changing the database. `pnpm backend:test:manual` adds nine local adapter/controller integration tests to the existing 25 runtime tests. The unchanged SQL suite has 410 assertions. See [the Phase C report](research/SCAN_PHASE_C.md) for current validation.
+
 1. `20260920010000_identity_foundation.sql` creates public `profiles`, `user_preferences`, `privacy_requests`, and `preference_merge_reviews`; private `account_controls`, `account_merge_tickets`, and `account_merge_events`; constrained enums; lifecycle triggers; and least-privilege grants.
 2. `20260920010100_identity_rls.sql` forces RLS on every exposed table. Owners can read/update only their active account rows; privacy and merge reviews are read-only to clients.
 3. `20260920010200_private_storage.sql` creates private `scan-raw-private` and `scan-retained-private` buckets with a 10 MiB limit and JPEG/PNG/WebP allowlist. It deliberately grants no client object access.

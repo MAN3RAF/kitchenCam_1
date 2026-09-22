@@ -3,6 +3,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { ConnectivityProvider } from '@/hooks/use-connectivity';
 import { AuthProvider } from '@/features/auth/auth-provider';
+import { ScanProvider } from '@/features/scans/scan-provider';
 import '@/config/public-env';
 import { useTheme } from '@/theme/use-theme';
 
@@ -26,7 +27,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <ConnectivityProvider>
         <AuthProvider>
           <StatusBar style={isDark ? 'light' : 'dark'} />
-          {children}
+          <ScanProvider>{children}</ScanProvider>
         </AuthProvider>
       </ConnectivityProvider>
     </ThemeProvider>

@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import Camera from 'lucide-react-native/icons/camera';
+import ListPlus from 'lucide-react-native/icons/list-plus';
 import { StyleSheet, View } from 'react-native';
 import { Button } from '@/components/button';
 import { Screen } from '@/components/screen';
@@ -17,12 +17,14 @@ export function HomeScreen() {
           Your kitchen
         </Text>
         <Button
-          label="Scan ingredients"
-          disabled
-          icon={<Camera size={24} color={colors.textDisabled} accessible={false} aria-hidden />}
-          accessibilityHint="Ingredient scanning is not available in this build."
+          label="Add ingredients"
+          onPress={() => router.push('/scans')}
+          icon={<ListPlus size={24} color={colors.textOnAction} accessible={false} aria-hidden />}
+          accessibilityHint="Start or resume a saved ingredient list."
         />
-        <Text tone="textSecondary">{"Ingredient scanning isn't available in this build."}</Text>
+        <Text tone="textSecondary">
+          Start with what you have. Add ingredients by hand and save your selection.
+        </Text>
       </View>
       <View style={[styles.section, styles.sectionBorder, { borderColor: colors.divider }]}>
         <Text variant="subheading" accessibilityRole="header" aria-level={2}>

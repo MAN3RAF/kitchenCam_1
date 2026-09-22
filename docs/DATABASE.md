@@ -6,6 +6,8 @@ Phase B update: scan state and lifecycle controls are now implemented locally; s
 
 ## Principles
 
+Phase C consumes the unchanged manual lifecycle contracts. Ingredient identity and array ordering persist in the draft JSON; saving an edit after confirmation advances the draft and clears the confirmation snapshot. No Phase C migration, table grant, policy, or generated-type change was needed.
+
 - PostgreSQL is the source of truth for users, recipes, social data, jobs, and entitlements.
 - `auth.users` is owned by Supabase Auth. Application tables reference its UUID and never duplicate credentials.
 - Every exposed table has explicit grants, RLS enabled, and allow/deny tests for every operation.

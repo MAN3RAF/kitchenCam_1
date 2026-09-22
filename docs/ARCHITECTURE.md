@@ -47,7 +47,7 @@ The mobile app never receives OpenAI, USDA, recipe-provider, Supabase service-ro
 
 ## Mobile architecture
 
-The approved Phase 1 mobile foundation is now implemented; see `ENGINEERING_FOUNDATION.md` for the current file tree and route reservations. It has no API consumers or persistence yet, so TanStack Query and Zustand remain deferred until needed. The five mobile tabs use native tabs and native stacks; the web-only layout is a development preview, not a new launch platform.
+The approved Phase 1 mobile foundation is implemented; see `ENGINEERING_FOUNDATION.md` for route reservations. [Phase C](research/SCAN_PHASE_C.md) adds the manual ingredient journey using TanStack Query for account-scoped server reads, a temporary `ScanSession`/`ScanEditor` store for recoverable edits, and a typed adapter over Phase B owner RPCs. Supabase remains authoritative; scan caches and unsaved edits are not persisted to disk. Zustand is unnecessary for this bounded flow. The five mobile tabs use native tabs and native stacks; the web-only layout is a development preview, not a new launch platform.
 
 Expo Router route files should stay thin: route parameters, screen composition, and navigation only. Features own UI, domain types, hooks, validation, and service adapters. Shared components expose explicit variants or compound APIs rather than accumulating behavior flags.
 
@@ -59,7 +59,7 @@ Long recipe/review/history lists use virtualization, stable item components, cac
 
 The approved local identity foundation is implemented in `supabase/`: forward migrations, explicit grants/RLS, private scan buckets with no client object policies, and JWT-verified Edge Functions for merge-ticket issuance, account merge, and account deletion. The mobile client supports lazy anonymous sessions and six-digit email OTP/magic-link callbacks using only a publishable key. Local runtime replay and integration tests passed as recorded in `BACKEND_VALIDATION.md`; no remote project exists. See `BACKEND_FOUNDATION.md`.
 
-[Phase B](research/SCAN_PHASE_B.md) adds owner-safe scan state, constrained drafts/confirmation snapshots, private upload/job/cleanup ledgers, revisioned mutations, lease fencing and transactional scan integration with account merge/deletion. All writes use controlled functions; client table access is read-only. Processing admission remains closed, and these database controls do not deploy ingress, sanitization, recognition, scheduling or mobile scan UI.
+[Phase B](research/SCAN_PHASE_B.md) adds owner-safe scan state, constrained drafts/confirmation snapshots, private upload/job/cleanup ledgers, revisioned mutations, lease fencing and transactional scan integration with account merge/deletion. All writes use controlled functions; client table access is read-only. Phase C consumes the existing manual creation, ingredient edit, and confirmation operations without schema changes. Processing admission remains closed; ingress, sanitization, recognition and scheduling remain future work.
 
 The backend has two access paths:
 

@@ -2,6 +2,8 @@
 
 Status: approved MVP engineering baseline; final legal/privacy/nutrition review remains open.
 
+Phase C manual ingredients are untrusted user input. The mobile adapter uses owner-authenticated Phase B RPCs with revision checks and idempotency; direct table mutations remain prohibited. Ingredient text stays out of navigation, analytics, crash metadata, and application logging. Account changes discard temporary scan caches/editors and fence late callbacks; each request can use only the matching account's token. No image permissions, uploads, provider calls, or service credentials were added. See [the Phase C report](research/SCAN_PHASE_C.md) for tested access and recovery behavior.
+
 ## Security objectives
 
 - Keep all privileged credentials and provider keys out of application bundles and over-the-air updates.

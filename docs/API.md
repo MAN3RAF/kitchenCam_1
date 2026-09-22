@@ -2,6 +2,8 @@
 
 Status: approved draft MVP `/v1` contract. Existing account Edge Functions and Phase B database RPCs are implemented locally; the `/v1` scan HTTP adapter remains unimplemented.
 
+Phase C uses a typed mobile adapter over the existing authenticated `create_scan` / `mutate_scan` RPCs and RLS-protected SELECTs for manual scans. It projects and validates only manual ingredient data, performs no direct table writes, and does not implement the future `/v1` HTTP envelopes. Saves carry `expectedVersion` and `expectedDraftRevision`; confirmation carries `expectedVersion` and `draftRevision`. UUID operation keys and unchanged request bodies survive ambiguous retries within the account session. Reads use explicit public columns and 20-row history pages ordered by creation time and ID. See [Phase C](research/SCAN_PHASE_C.md).
+
 ## Conventions
 
 - Base path: `/v1` over HTTPS.

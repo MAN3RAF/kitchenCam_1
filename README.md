@@ -2,6 +2,8 @@
 
 Mobile and local Supabase engineering foundations for the approved KitchenCam MVP. Phase 0 research gates remain open. No production infrastructure or product integrations are configured.
 
+The Phase C manual ingredient journey connects Home to real saved drafts, ingredient selection, explicit confirmation, and a persisted Ready screen. Configure the existing public Supabase environment pair to use it. Camera, recognition, and recipes remain unavailable. See [the Phase C report](docs/research/SCAN_PHASE_C.md) for validation and device gates.
+
 ## Local development
 
 Use Node 24.19 and pnpm 11.19 (pinned in `.node-version` and `package.json`).
@@ -27,6 +29,7 @@ pnpm db:test
 pnpm db:lint
 pnpm backend:test
 pnpm backend:test:scan
+pnpm backend:test:manual
 pnpm db:types
 pnpm db:types:check
 pnpm backend:stop
@@ -44,6 +47,7 @@ Local email is captured by the CLI email service (currently Mailpit at the Inbuc
 - [Local backend and authentication foundation](docs/BACKEND_FOUNDATION.md)
 - [Camera/scan Phase A contracts and local security/runtime evidence](docs/research/SCAN_PHASE_A.md)
 - [Phase B scan schema, lifecycle controls and validation](docs/research/SCAN_PHASE_B.md)
+- [Phase C manual ingredient journey and validation](docs/research/SCAN_PHASE_C.md)
 - [Roadmap and blocked gates](docs/ROADMAP.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Design and accessibility](docs/UX_FOUNDATION.md)
