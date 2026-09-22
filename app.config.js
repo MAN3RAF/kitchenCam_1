@@ -17,9 +17,40 @@ module.exports = () => {
     orientation: 'default',
     userInterfaceStyle: 'automatic',
     ios: { supportsTablet: false },
-    android: { predictiveBackGestureEnabled: true },
+    android: {
+      predictiveBackGestureEnabled: true,
+      blockedPermissions: [
+        'android.permission.RECORD_AUDIO',
+        'android.permission.READ_MEDIA_IMAGES',
+        'android.permission.READ_MEDIA_VIDEO',
+        'android.permission.READ_EXTERNAL_STORAGE',
+        'android.permission.WRITE_EXTERNAL_STORAGE',
+      ],
+    },
     web: { bundler: 'metro', output: 'single' },
-    plugins: ['expo-router', 'expo-dev-client'],
+    plugins: [
+      'expo-router',
+      'expo-dev-client',
+      [
+        'expo-camera',
+        {
+          cameraPermission:
+            'KitchenCam uses the camera to take ingredient photos that stay on your device.',
+          microphonePermission: false,
+          recordAudioAndroid: false,
+          barcodeScannerEnabled: false,
+        },
+      ],
+      [
+        'expo-image-picker',
+        {
+          photosPermission: false,
+          microphonePermission: false,
+          cameraPermission:
+            'KitchenCam uses the camera to take ingredient photos that stay on your device.',
+        },
+      ],
+    ],
     experiments: { typedRoutes: true },
   };
 };

@@ -57,7 +57,7 @@ tooling/                     Build-only client boundary policy
 .github/workflows/           Credential-free quality checks
 ```
 
-The original mobile foundation added no provider stubs, generated recipes, scan quotas, or entitlements. Subsequent auth/backend work added sessions and account clients. Phase C adds `app/scans/` and `src/features/scans/` for the real manual ingredient workflow; Home now opens it. Photo recognition remains explicitly unavailable and never requests camera permission.
+The original mobile foundation added no provider stubs, generated recipes, scan quotas, or entitlements. Subsequent auth/backend work added sessions and account clients. Phase C adds `app/scans/` and `src/features/scans/` for the real manual ingredient workflow; Phase D adds local-only capture under `app/scans/` and `src/features/capture/`. Photo preparation, upload, and recognition remain unavailable; camera access is requested only after the user chooses Camera.
 
 ## Route reservations
 
@@ -66,7 +66,7 @@ The root native Stack hosts flows independently of tab stacks. Implemented paths
 | Future route | Placement / responsibility |
 |---|---|
 | `(auth)/sign-in`, `(auth)/verify`, `(auth)/callback`, `(auth)/review-preferences`, `(auth)/delete-account` | Implemented local email/guest/account lifecycle routes; social sign-in remains deferred |
-| `scans/index`, `scans/manual`, `scans/[id]/index`, `scans/[id]/confirm`, `scans/[id]/ready` | Implemented Phase C manual journey in a root stack; Home is the primary entry; no persistent scan tab |
+| `scans/index`, `scans/camera`, `scans/gallery`, `scans/preview`, `scans/manual`, `scans/[id]/index`, `scans/[id]/confirm`, `scans/[id]/ready` | Implemented Phase C manual and Phase D local capture journeys in a root stack; Home is the primary entry; no persistent scan tab |
 | `scans/[id]/results` | Future recipe behavior; no route or active link |
 | `recipes/[id]`, `recipes/[id]/nutrition`, `recipes/[id]/cook` | Shared root stack; open from Recipes/Saved/Community; preserve return route |
 | `settings/index`, `settings/privacy` | Root stack, future Profile entry |

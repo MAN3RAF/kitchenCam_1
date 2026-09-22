@@ -2,7 +2,7 @@
 
 Status: approved MVP engineering baseline; final legal/privacy/nutrition review remains open.
 
-Phase C manual ingredients are untrusted user input. The mobile adapter uses owner-authenticated Phase B RPCs with revision checks and idempotency; direct table mutations remain prohibited. Ingredient text stays out of navigation, analytics, crash metadata, and application logging. Account changes discard temporary scan caches/editors and fence late callbacks; each request can use only the matching account's token. No image permissions, uploads, provider calls, or service credentials were added. See [the Phase C report](research/SCAN_PHASE_C.md) for tested access and recovery behavior.
+Phase C manual ingredients are untrusted user input. The mobile adapter uses owner-authenticated Phase B RPCs with revision checks and idempotency; direct table mutations remain prohibited. Ingredient text stays out of navigation, analytics, crash metadata, and application logging. Account changes discard temporary scan caches/editors and fence late callbacks; each request can use only the matching account's token. Phase D requests camera access only after an explicit choice, uses a private app-owned local copy for preview, blocks microphone/barcode/broad library permissions, and sends no image to a provider. Image URIs, filenames, metadata, and bytes stay out of telemetry and navigation. See [Phase D](research/SCAN_PHASE_D.md) for the capture boundary and native-device gates.
 
 ## Security objectives
 

@@ -88,6 +88,12 @@ export function ScanEntryScreen() {
           What’s in your kitchen?
         </Text>
         <Text>Add what you have, then choose the ingredients you want to use.</Text>
+        <Button label="Camera" onPress={() => router.push('/scans/camera')} />
+        <Button
+          label="Photo Library"
+          variant="secondary"
+          onPress={() => router.push('/scans/gallery')}
+        />
         <Button
           label="Add ingredients manually"
           onPress={() => {
