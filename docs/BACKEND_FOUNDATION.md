@@ -4,6 +4,8 @@ Status: local backend runtime validation completed on Arch Linux on 2026-09-20; 
 
 ## Scope implemented
 
+This document records the identity foundation. [Phase B](research/SCAN_PHASE_B.md) adds seven forward scan migrations after that checkpoint, three pgTAP suites, fifteen local scan runtime tests and scan-aware account cleanup, including the independent owner review repairs. The original five migrations remain unchanged. Current database coverage is 410 assertions across eight files; `pnpm backend:test:scan` supplements the ten foundation runtime tests. For an existing local database, use `pnpm exec supabase migration up --local` to apply pending migrations without a reset. Historical counts and reset instructions below describe the earlier foundation validation.
+
 - Local Supabase CLI configuration for PostgreSQL 17, Auth, Storage, Inbucket email capture, and Edge Functions.
 - Forward-only identity, preference, privacy, RLS, storage, and account-lifecycle migrations.
 - Lazy anonymous identity, six-digit email OTP, strict magic-link callback handling, secure native session persistence, and guest-to-account merge.

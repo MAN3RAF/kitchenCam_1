@@ -1,6 +1,6 @@
 # KitchenCam API Design
 
-Status: approved draft MVP contract; no endpoints have been implemented.
+Status: approved draft MVP `/v1` contract. Existing account Edge Functions and Phase B database RPCs are implemented locally; the `/v1` scan HTTP adapter remains unimplemented.
 
 ## Conventions
 
@@ -33,6 +33,8 @@ Errors return:
 Stable categories: `VALIDATION`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `QUOTA_EXCEEDED`, `CONSENT_REQUIRED`, `RATE_LIMITED`, `PROVIDER_TIMEOUT`, `PROVIDER_UNAVAILABLE`, `UNSAFE_OR_UNSUPPORTED`, and `INTERNAL`.
 
 ## Scan and upload endpoints
+
+[Phase B](research/SCAN_PHASE_B.md) implements database controls beneath this contract: owner-authenticated `create_scan` and `mutate_scan`, read-only owner tables, and service-only upload/job/cleanup RPCs. Database rows use SQL column names and are not the camelCase `ScanStatus` HTTP envelope. A future adapter must validate/map the Phase A strict schemas, turn safe database errors into the API envelope, and never expose service-only RPC results. Processing admission remains disabled. No upload capability URL is issued by Phase B.
 
 The reviewed Phase A [scan contracts](research/SCAN_CONTRACTS.md) supersede the earlier combined upload/creation draft. They define separate creation, manual creation, upload authorization, upload completion/sanitization, recognition, status, photo revision, manual fallback, draft edit, explicit confirmation, cancellation and deletion operations. Strict executable schemas and a provider-neutral recognition port live only in research tooling; **no scan endpoint is implemented**.
 

@@ -59,6 +59,8 @@ Long recipe/review/history lists use virtualization, stable item components, cac
 
 The approved local identity foundation is implemented in `supabase/`: forward migrations, explicit grants/RLS, private scan buckets with no client object policies, and JWT-verified Edge Functions for merge-ticket issuance, account merge, and account deletion. The mobile client supports lazy anonymous sessions and six-digit email OTP/magic-link callbacks using only a publishable key. Local runtime replay and integration tests passed as recorded in `BACKEND_VALIDATION.md`; no remote project exists. See `BACKEND_FOUNDATION.md`.
 
+[Phase B](research/SCAN_PHASE_B.md) adds owner-safe scan state, constrained drafts/confirmation snapshots, private upload/job/cleanup ledgers, revisioned mutations, lease fencing and transactional scan integration with account merge/deletion. All writes use controlled functions; client table access is read-only. Processing admission remains closed, and these database controls do not deploy ingress, sanitization, recognition, scheduling or mobile scan UI.
+
 The backend has two access paths:
 
 1. The app may use the Supabase client directly for simple user-owned data where grants and RLS fully express authorization, such as reading a user's favorites.

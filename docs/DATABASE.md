@@ -2,6 +2,8 @@
 
 Status: approved logical MVP baseline. The identity/preferences/privacy subset now has local forward migrations; later domain tables remain designs only.
 
+Phase B update: scan state and lifecycle controls are now implemented locally; see [the implementation report](research/SCAN_PHASE_B.md). The logical scan table list below is not the physical schema. The implemented public tables are `scans` and `scan_deletions`; constrained ingredient drafts and confirmation snapshots live on `scans`. Private tables hold controls, immutable image/cleanup inventory, hashed upload authorizations, jobs, operation idempotency and processing policy. There is no ingredient taxonomy, provider audit payload, recipe or quota implementation. Canonical/normalized ingredient claims remain null until taxonomy validation is implemented. No private image path or provider envelope is in a public table.
+
 ## Principles
 
 - PostgreSQL is the source of truth for users, recipes, social data, jobs, and entitlements.

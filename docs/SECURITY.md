@@ -33,6 +33,8 @@ Apple's review rules make an equivalent privacy-preserving login option relevant
 
 ## Image and media privacy
 
+[Phase B validation](research/SCAN_PHASE_B.md) now covers database scan ownership, server-only image paths/digests/authorizations/jobs, immutable approved artifacts, revision and lease fencing, and account lifecycle races. Account deletion checks registered media paths even after a guest merge. Cleanup remains pending until the final possible writer deadline passes and deletion is acknowledged; final inventory records discard paths and image metadata. A scheduled physical cleanup executor and enforceable ingress/worker writer deadlines are still required before uploads can be enabled. Default processing policy is closed, and storage client policies are unchanged.
+
 - Ask camera/gallery permission in context and explain whether server/third-party processing occurs.
 - Remove GPS/EXIF, downsize locally, validate magic bytes, MIME, dimensions, and size, and generate unpredictable object names.
 - Store scans in private buckets. Use short-lived signed access only for the processing job or owning user.

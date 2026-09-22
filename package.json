@@ -27,6 +27,7 @@
     "backend:stop": "supabase stop --no-backup",
     "backend:functions": "supabase functions serve",
     "backend:test": "node --test tests/backend-runtime.test.cjs",
+    "backend:test:scan": "node --test tests/scan-phase-b-runtime.test.cjs",
     "db:reset": "supabase db reset --local",
     "db:test": "supabase test db",
     "db:lint": "supabase db lint --local --level warning --fail-on warning",

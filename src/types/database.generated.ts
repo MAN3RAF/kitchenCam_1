@@ -114,6 +114,99 @@ export type Database = {
         }
         Relationships: []
       }
+      scan_deletions: {
+        Row: {
+          accepted_at: string
+          completed_at: string | null
+          id: string
+          media_delete_by: string
+          owner_id: string | null
+          scan_id: string
+        }
+        Insert: {
+          accepted_at?: string
+          completed_at?: string | null
+          id?: string
+          media_delete_by: string
+          owner_id?: string | null
+          scan_id: string
+        }
+        Update: {
+          accepted_at?: string
+          completed_at?: string | null
+          id?: string
+          media_delete_by?: string
+          owner_id?: string | null
+          scan_id?: string
+        }
+        Relationships: []
+      }
+      scans: {
+        Row: {
+          assessment: string | null
+          confirmed_at: string | null
+          confirmed_ingredients: Json | null
+          created_at: string
+          deleted_at: string | null
+          draft_revision: number
+          first_uploaded_at: string | null
+          id: string
+          image_revision: number
+          ingredients: Json
+          manual_fallback: boolean
+          media_expires_at: string | null
+          owner_id: string
+          safe_error_code: string | null
+          sanitization_state: Database["public"]["Enums"]["scan_sanitization_state"]
+          source: Database["public"]["Enums"]["scan_source"]
+          state: Database["public"]["Enums"]["scan_state"]
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          assessment?: string | null
+          confirmed_at?: string | null
+          confirmed_ingredients?: Json | null
+          created_at?: string
+          deleted_at?: string | null
+          draft_revision?: number
+          first_uploaded_at?: string | null
+          id?: string
+          image_revision: number
+          ingredients?: Json
+          manual_fallback?: boolean
+          media_expires_at?: string | null
+          owner_id: string
+          safe_error_code?: string | null
+          sanitization_state?: Database["public"]["Enums"]["scan_sanitization_state"]
+          source: Database["public"]["Enums"]["scan_source"]
+          state: Database["public"]["Enums"]["scan_state"]
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          assessment?: string | null
+          confirmed_at?: string | null
+          confirmed_ingredients?: Json | null
+          created_at?: string
+          deleted_at?: string | null
+          draft_revision?: number
+          first_uploaded_at?: string | null
+          id?: string
+          image_revision?: number
+          ingredients?: Json
+          manual_fallback?: boolean
+          media_expires_at?: string | null
+          owner_id?: string
+          safe_error_code?: string | null
+          sanitization_state?: Database["public"]["Enums"]["scan_sanitization_state"]
+          source?: Database["public"]["Enums"]["scan_source"]
+          state?: Database["public"]["Enums"]["scan_state"]
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
       user_preferences: {
         Row: {
           created_at: string
@@ -157,6 +250,48 @@ export type Database = {
           source_user_id: string
         }[]
       }
+      create_scan: {
+        Args: {
+          p_ingredients?: Json
+          p_key: string
+          p_source: Database["public"]["Enums"]["scan_source"]
+        }
+        Returns: {
+          assessment: string | null
+          confirmed_at: string | null
+          confirmed_ingredients: Json | null
+          created_at: string
+          deleted_at: string | null
+          draft_revision: number
+          first_uploaded_at: string | null
+          id: string
+          image_revision: number
+          ingredients: Json
+          manual_fallback: boolean
+          media_expires_at: string | null
+          owner_id: string
+          safe_error_code: string | null
+          sanitization_state: Database["public"]["Enums"]["scan_sanitization_state"]
+          source: Database["public"]["Enums"]["scan_source"]
+          state: Database["public"]["Enums"]["scan_state"]
+          updated_at: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "scans"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      internal_account_scan_cleanup: {
+        Args: { p_request: string }
+        Returns: Json
+      }
+      internal_account_scan_cleanup_ready: {
+        Args: { p_request: string }
+        Returns: boolean
+      }
       internal_complete_account_deletion: {
         Args: {
           p_request_id: string
@@ -177,9 +312,43 @@ export type Database = {
         Args: { p_request_id: string }
         Returns: undefined
       }
+      internal_scan_ack_cleanup: {
+        Args: { p_image: string; p_token: string }
+        Returns: boolean
+      }
+      internal_scan_claim_cleanup: { Args: { p_limit?: number }; Returns: Json }
+      internal_scan_claim_job: {
+        Args: { p_scan: string; p_stage: string }
+        Returns: Json
+      }
+      internal_scan_expire: { Args: { p_scan: string }; Returns: boolean }
+      internal_scan_finish_job: {
+        Args: { p_body: Json; p_job: string; p_lease: string }
+        Returns: boolean
+      }
+      internal_scan_reconcile_deletions: { Args: never; Returns: number }
+      internal_scan_upload: {
+        Args: {
+          p_body: Json
+          p_key: string
+          p_operation: string
+          p_owner: string
+          p_scan: string
+        }
+        Returns: Json
+      }
       issue_account_merge_ticket: {
         Args: { p_expires_at: string; p_token_hash: string }
         Returns: string
+      }
+      mutate_scan: {
+        Args: {
+          p_body: Json
+          p_key: string
+          p_operation: string
+          p_scan: string
+        }
+        Returns: Json
       }
       request_account_deletion: {
         Args: { p_correlation_id: string }
@@ -196,6 +365,25 @@ export type Database = {
       onboarding_state: "not_started" | "in_progress" | "completed"
       privacy_request_status: "accepted" | "processing" | "completed" | "failed"
       privacy_request_type: "export" | "delete"
+      scan_sanitization_state:
+        | "not_started"
+        | "pending"
+        | "running"
+        | "passed"
+        | "rejected"
+        | "failed"
+        | "cancelled"
+      scan_source: "camera" | "gallery" | "manual"
+      scan_state:
+        | "awaiting_upload"
+        | "sanitizing"
+        | "queued"
+        | "recognizing"
+        | "needs_confirmation"
+        | "confirmed"
+        | "failed"
+        | "cancelled"
+        | "expired"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -328,6 +516,27 @@ export const Constants = {
       onboarding_state: ["not_started", "in_progress", "completed"],
       privacy_request_status: ["accepted", "processing", "completed", "failed"],
       privacy_request_type: ["export", "delete"],
+      scan_sanitization_state: [
+        "not_started",
+        "pending",
+        "running",
+        "passed",
+        "rejected",
+        "failed",
+        "cancelled",
+      ],
+      scan_source: ["camera", "gallery", "manual"],
+      scan_state: [
+        "awaiting_upload",
+        "sanitizing",
+        "queued",
+        "recognizing",
+        "needs_confirmation",
+        "confirmed",
+        "failed",
+        "cancelled",
+        "expired",
+      ],
     },
   },
 } as const

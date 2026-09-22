@@ -259,6 +259,40 @@ test('app anonymous-to-email OTP upgrade preserves identity, data, and persisted
       .update({ display_name: 'Before upgrade' })
       .eq('user_id', session.user.id),
   );
+  const ingredients = [
+    {
+      id: randomUUID(),
+      displayName: 'Upgrade fixture',
+      normalizedName: null,
+      canonicalId: null,
+      selected: true,
+      quantity: null,
+      provenance: 'manual',
+      detectionId: null,
+    },
+  ];
+  const draft = success(
+    await instance.rpc('create_scan', {
+      p_key: randomUUID(),
+      p_source: 'manual',
+      p_ingredients: ingredients,
+    }),
+  );
+  const confirmationScan = success(
+    await instance.rpc('create_scan', {
+      p_key: randomUUID(),
+      p_source: 'manual',
+      p_ingredients: ingredients,
+    }),
+  );
+  const confirmed = success(
+    await instance.rpc('mutate_scan', {
+      p_scan: confirmationScan.id,
+      p_key: randomUUID(),
+      p_operation: 'confirm',
+      p_body: { expectedVersion: 1, draftRevision: 1 },
+    }),
+  );
   const email = `upgrade-${nonce}@example.test`;
   const pending = await auth.requestEmailCode(email);
   assert.equal(pending.type, 'email_change');
@@ -267,6 +301,14 @@ test('app anonymous-to-email OTP upgrade preserves identity, data, and persisted
   const upgraded = success(await instance.auth.getUser()).user;
   assert.equal(upgraded.id, session.user.id);
   assert.equal(upgraded.is_anonymous, false);
+  assert.deepEqual(
+    success(await instance.from('scans').select('*').eq('id', draft.id).single()),
+    draft,
+  );
+  assert.deepEqual(
+    success(await instance.from('scans').select('*').eq('id', confirmed.id).single()),
+    confirmed,
+  );
   assert.equal(
     success(await instance.from('profiles').select().single()).display_name,
     'Before upgrade',

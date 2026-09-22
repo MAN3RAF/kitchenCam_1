@@ -2,6 +2,7 @@ import { adminClient, requireUser, userClient } from '../_shared/auth.ts';
 import { FunctionError, mapUnknownError } from '../_shared/errors.ts';
 import { logSafeEvent } from '../_shared/logger.ts';
 import { failure, json, requestId } from '../_shared/response.ts';
+import { removeRegisteredScanObjects } from './scan-cleanup.ts';
 
 const privateBuckets = ['scan-raw-private', 'scan-retained-private'] as const;
 
@@ -48,6 +49,7 @@ Deno.serve(async (request) => {
       },
     );
     if (processingError) throw new FunctionError('ACCOUNT_CLEANUP_PENDING', 503, true);
+    await removeRegisteredScanObjects(admin, deletionRequestId);
     await removePrivateObjects(admin, user.id);
 
     const { error: deleteError } = await admin.auth.admin.deleteUser(user.id, false);

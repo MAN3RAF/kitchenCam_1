@@ -1,6 +1,6 @@
 # Scan journey contracts — Phase A
 
-Status: finalized Phase A contracts with executable specification tests; the owner approved authenticated bounded upload ingress and an isolated Node + Sharp/libvips sanitizer with enforceable process/OS limits. No scan endpoints, mobile screens, tables, workers, or policies are deployed. See the owner decision record and preserved evidence in [SCAN_PHASE_A.md](SCAN_PHASE_A.md). Production hosting/runtime selection remains unresolved; Phase B and provisioning are not authorized.
+Status: finalized Phase A contracts with executable specification tests; the owner approved authenticated bounded upload ingress and an isolated Node + Sharp/libvips sanitizer with enforceable process/OS limits. Phase A deployed no scan endpoints, mobile screens, tables, workers, or policies. See the owner decision record and preserved evidence in [SCAN_PHASE_A.md](SCAN_PHASE_A.md). Production hosting/runtime selection and provisioning remain unresolved. Phase B database implementation is now recorded in [SCAN_PHASE_B.md](SCAN_PHASE_B.md); the operations and HTTP projections below remain the adapter contract, not deployed scan endpoints.
 
 This document refines the previously unimplemented scan subsection of API.md. It does not select an AI provider, implement recipe APIs, or close Phase 0 gates. The executable schemas live in `tooling/scan-phase-a/contracts.ts`; they are deliberately outside the mobile bundle. Future implementation can promote reviewed public contracts without importing the research tooling.
 
@@ -83,7 +83,7 @@ Validation rejects excessive lists/regions, malformed output and invalid coordin
 
 `version` starts at 1 for an accepted server scan and orders server writes. `imageRevision` changes when a photo is replaced. `draftRevision` changes when ingredients are edited; confirmation names that exact revision. Internal worker lease/fencing generation is server-only. An identity reset increments (never reuses) the client effect generation; new flow instances must also invalidate/unsubscribe all old callbacks. Client effect generation suppresses callbacks from replaced photos, abandoned routes, cancellation, manual fallback, or identity changes. These counters have different meanings and must not be substituted for one another.
 
-Database uniqueness, atomic compare-and-set and authorization enforcement remain Phase B+ implementation work. `idempotency.ts` is only a pure ordering specification.
+Phase B implements database uniqueness, atomic version checks and authorization enforcement; see its report for the database RPC boundary and validation. `idempotency.ts` remains the unchanged pure Phase A ordering specification.
 
 ## Typed failures and recovery
 

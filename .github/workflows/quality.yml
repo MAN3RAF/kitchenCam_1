@@ -32,6 +32,7 @@ jobs:
       - run: pnpm db:test
       - run: pnpm db:lint
       - run: pnpm backend:test
+      - run: pnpm backend:test:scan
       - run: pnpm db:types:check
       - run: pnpm db:types
       - run: git ls-files --error-unmatch src/types/database.generated.ts
