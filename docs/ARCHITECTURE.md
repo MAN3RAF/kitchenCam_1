@@ -72,6 +72,8 @@ Keep normalization, ranking, quota, safety, entitlement, and provider-port logic
 
 ## Image upload and storage
 
+[Phase E](research/SCAN_PHASE_E.md) implements local preparation only: bounded random-access admission, a serial native pixel renderer, fresh JPEG encoding, metadata-segment removal, and independent output inspection/decode. `PhotoSession` retains only source/prepared descriptors in memory and fences obsolete results across replacement, navigation, backgrounding, and identity changes. The source remains for preview/retry until replacement or abandonment. Client preparation is defense in depth, not sanitizer approval. No upload or server scan state is created; native builds and physical-device fixtures remain open gates.
+
 The [Phase A scan contracts](research/SCAN_CONTRACTS.md) and [runtime/security evidence](research/SCAN_PHASE_A.md) refine this previously unimplemented path. The owner provisionally approved a 25 MiB source / 12 MP full-decode ceiling, upright metadata-free prepared JPEG with a long edge no greater than 2048 px and a 4 MiB byte cap. The existing storage hard ceiling remains unchanged. The 12 MP ceiling is an engineering safety limit, not a permanent product requirement: physical Android/device testing may justify a revision if bounded downsampling safely handles larger images. Native-device validation is not complete.
 
 Create the scan separately from upload authorization. Verify active ownership, notice, limits and processing availability before issuing an upload. Complete-upload verification queues sanitization; recognition can use only immutable sanitizer-approved bytes for the same revision. Provider references, storage paths and upload capabilities stay out of public scan status and navigation.

@@ -15,17 +15,40 @@ export function PreviewScreen() {
   const photo = state.photo;
   const active = useRef(false);
   const [loaded, setLoaded] = useState<string | null>(null);
+  const [admitted, setAdmitted] = useState<string | null>(null);
   useFocusEffect(
     useCallback(() => {
       active.current = true;
+      let focused = true;
+      let checkedRevision: string | null = null;
       const validate = () => {
         const current = session.snapshot().photo;
-        if (AppState.currentState === 'active' && current) void session.validate(current.revision);
+        if (
+          focused &&
+          AppState.currentState === 'active' &&
+          current &&
+          checkedRevision !== current.revision &&
+          !session.snapshot().busy
+        ) {
+          checkedRevision = current.revision;
+          void session.validate(current.revision).then((valid) => {
+            if (focused && valid && session.snapshot().photo === current)
+              setAdmitted(current.revision);
+          });
+        }
       };
+      // Acquisition can finish after focus; also admit replacements on this mounted route.
+      const unsubscribe = session.subscribe(validate);
       validate();
-      const subscription = AppState.addEventListener('change', validate);
+      const subscription = AppState.addEventListener('change', () => {
+        checkedRevision = null;
+        validate();
+      });
       return () => {
+        focused = false;
         active.current = false;
+        unsubscribe();
+        session.cancelPreparation();
         subscription.remove();
       };
     }, [session]),
@@ -38,42 +61,47 @@ export function PreviewScreen() {
       {photo ? (
         <>
           {loaded !== photo.revision ? <LoadingState label="Opening your photo" /> : null}
-          <Image
-            key={photo.revision}
-            source={{ uri: photo.uri }}
-            contentFit="contain"
-            cachePolicy="none"
-            transition={0}
-            accessibilityLabel="Selected ingredient photo"
-            accessible
-            style={styles.photo}
-            onLoad={() => {
-              if (active.current && session.snapshot().photo?.revision === photo.revision)
-                setLoaded(photo.revision);
-            }}
-            onError={() => {
-              if (active.current) session.failPreview(photo.revision);
-            }}
-          />
+          {admitted === photo.revision ? (
+            <Image
+              key={photo.revision}
+              source={{ uri: photo.uri }}
+              contentFit="contain"
+              cachePolicy="none"
+              transition={0}
+              accessibilityLabel="Selected ingredient photo"
+              accessible
+              style={styles.photo}
+              onLoad={() => {
+                if (active.current && session.snapshot().photo?.revision === photo.revision)
+                  setLoaded(photo.revision);
+              }}
+              onError={() => {
+                if (active.current) session.failPreview(photo.revision);
+              }}
+            />
+          ) : null}
           <Text tone="textSecondary">
             {photo.source === 'camera'
               ? 'Taken with your camera.'
               : 'Selected from your photo library.'}{' '}
             Kept only on this device for this session.
           </Text>
-          {state.accepted ? (
+          {state.preparing ? <LoadingState label="Preparing photo…" /> : null}
+          {state.prepared ? (
             <Text accessibilityRole="alert">
-              Photo selected. Photo preparation and recognition aren’t available yet. Enter your
+              Photo prepared on this device. Upload and recognition aren’t available yet. Enter your
               ingredients manually to continue.
             </Text>
           ) : null}
           <Button
-            label={state.busy ? 'Checking photo…' : 'Use Photo'}
+            label={
+              state.preparing ? 'Preparing photo…' : state.busy ? 'Checking photo…' : 'Use Photo'
+            }
             accessibilityLabel="Use Photo"
-            disabled={state.busy || loaded !== photo.revision || state.accepted}
+            disabled={state.busy || loaded !== photo.revision || !!state.prepared}
             accessibilityState={{ busy: state.busy }}
             onPress={() => {
-              void session.validate(photo.revision, true);
+              void session.preparePhoto(photo.revision);
             }}
           />
         </>
@@ -92,7 +120,10 @@ export function PreviewScreen() {
       <Button
         label="Choose Another"
         variant="secondary"
-        onPress={() => router.replace('/scans/gallery')}
+        onPress={() => {
+          session.cancelPreparation();
+          router.replace('/scans/gallery');
+        }}
       />
       <ManualPhotoAction />
     </Screen>

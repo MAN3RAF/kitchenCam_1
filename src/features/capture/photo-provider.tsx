@@ -13,6 +13,7 @@ import { randomUUID } from 'expo-crypto';
 import { useAuth } from '@/features/auth/auth-provider';
 import { PhotoSession } from './photo-session';
 import { activatePhotoCache, photoFiles, retryPhotoCleanup } from './photo-native';
+import { activatePreparationCache, photoPreparation } from './preparation-files';
 
 const PhotoContext = createContext<PhotoSession | null>(null);
 export function PhotoProvider({ children }: PropsWithChildren) {
@@ -21,14 +22,18 @@ export function PhotoProvider({ children }: PropsWithChildren) {
 }
 function PhotoScope({ children }: PropsWithChildren) {
   const path = usePathname();
-  const [session] = useState(() => new PhotoSession(photoFiles, randomUUID));
+  const [session] = useState(() => new PhotoSession(photoFiles, randomUUID, photoPreparation));
   const attached = useRef<PhotoSession | null>(null);
   useEffect(() => {
     attached.current = session;
     const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') retryPhotoCleanup();
+      if (state === 'active') {
+        retryPhotoCleanup();
+        activatePreparationCache();
+      } else session.cancelPreparation();
     });
     activatePhotoCache();
+    activatePreparationCache();
     return () => {
       attached.current = null;
       subscription.remove();

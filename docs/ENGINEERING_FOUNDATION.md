@@ -15,6 +15,8 @@ Checked 2026-09-19 against official Expo documentation, the published `expo-temp
 - ESLint 9 is retained because Expo's current React/import plugins declare ESLint 9 compatibility, not 10. Its upstream deprecation warning is tracked; update with a verified compatible Expo lint stack.
 - The installed SDK 57 Router exposes `unstable-native-tabs`; the latest documentation also shows a newer `native-tabs` entry point. Use the installed API until an intentional SDK upgrade.
 
+Phase E validation on 2026-09-26 required the current SDK 57 compatibility patches: Expo 57.0.25, Image Picker 57.0.20, Linking 57.0.11, and Router 57.0.23. React Native, React, and the package-manager pins remain unchanged. The lockfile also records their Expo transitive patch updates. These are compatibility repairs, not an SDK migration.
+
 Sources checked 2026-09-19:
 
 - https://docs.expo.dev/versions/latest/ (compatibility and OS matrix)
@@ -57,7 +59,7 @@ tooling/                     Build-only client boundary policy
 .github/workflows/           Credential-free quality checks
 ```
 
-The original mobile foundation added no provider stubs, generated recipes, scan quotas, or entitlements. Subsequent auth/backend work added sessions and account clients. Phase C adds `app/scans/` and `src/features/scans/` for the real manual ingredient workflow; Phase D adds local-only capture under `app/scans/` and `src/features/capture/`. Photo preparation, upload, and recognition remain unavailable; camera access is requested only after the user chooses Camera.
+The original mobile foundation added no provider stubs, generated recipes, scan quotas, or entitlements. Subsequent auth/backend work added sessions and account clients. Phase C adds `app/scans/` and `src/features/scans/` for the real manual ingredient workflow; Phase D adds local-only capture under `app/scans/` and `src/features/capture/`. Phase E adds bounded local JPEG preparation through the app-local Expo module in `modules/kitchencam-image/`, with no new npm library. Its iOS WebP pod constraint matches the already-installed Expo Image dependency. A rebuilt native development client and native/device validation are required; Expo Go and JavaScript exports cannot validate this module. Upload and recognition remain unavailable. See [Phase E](research/SCAN_PHASE_E.md). Camera access is requested only after the user chooses Camera.
 
 ## Route reservations
 

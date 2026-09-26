@@ -35,6 +35,8 @@ Apple's review rules make an equivalent privacy-preserving login option relevant
 
 ## Image and media privacy
 
+[Phase E](research/SCAN_PHASE_E.md) adds local-only source admission and JPEG re-encoding. It enforces the provisional 25 MiB / 12 MP source policy before its native transform, applies orientation once, flattens alpha on white, caps prepared dimensions/bytes, strips encoder APP/COM metadata, and inspects/decodes the actual final file. Prepared references stay in the memory-only photo session. Cancellation fences late native completion; cleanup touches app-owned files only. Native decoders have no hard process memory/time isolation on mobile, and device behavior remains unvalidated. This is defense in depth: Phase F must independently sanitize and verify on the server. No image is trusted, uploaded, or sent to a provider by Phase E.
+
 [Phase B validation](research/SCAN_PHASE_B.md) now covers database scan ownership, server-only image paths/digests/authorizations/jobs, immutable approved artifacts, revision and lease fencing, and account lifecycle races. Account deletion checks registered media paths even after a guest merge. Cleanup remains pending until the final possible writer deadline passes and deletion is acknowledged; final inventory records discard paths and image metadata. A scheduled physical cleanup executor and enforceable ingress/worker writer deadlines are still required before uploads can be enabled. Default processing policy is closed, and storage client policies are unchanged.
 
 - Ask camera/gallery permission in context and explain whether server/third-party processing occurs.

@@ -49,6 +49,7 @@ jest.mock('@/features/capture/photo-native', () => ({
   choosePhoto: jest.fn(),
   recoverPicker: jest.fn(),
 }));
+jest.mock('@/features/capture/preparation-files', () => ({ activatePreparationCache: jest.fn() }));
 jest.mock('@/features/scans/scan-provider', () => ({ useScanSession: () => null }));
 jest.mock('@/features/auth/auth-provider', () => ({ useAuth: () => ({ user: null }) }));
 
@@ -77,7 +78,20 @@ beforeEach(() => {
       .fn<ReturnType<PhotoFiles['releaseInput']>, Parameters<PhotoFiles['releaseInput']>>()
       .mockResolvedValue(undefined),
   };
-  session = new PhotoSession(files, () => String(++revision));
+  session = new PhotoSession(files, () => String(++revision), {
+    admit: async () => {},
+    prepare: async (photo, id) => ({
+      uri: 'file:///prepared.jpg',
+      width: 400,
+      height: 800,
+      size: 32,
+      mimeType: 'image/jpeg',
+      revision: id,
+      sourceRevision: photo.revision,
+      appOwned: true,
+    }),
+    remove: async () => {},
+  });
   jest.mocked(usePhotoSession).mockReturnValue(session);
   AppState.currentState = 'active';
   jest.spyOn(AppState, 'addEventListener').mockImplementation((_event, listener) => {
@@ -230,7 +244,7 @@ test('preview preserves aspect ratio and Use Photo shows honest local-only bound
   expect(screen.getByRole('button', { name: 'Use Photo' })).toBeDisabled();
   await fireEvent(screen.getByTestId('photo'), 'load');
   await press('Use Photo');
-  expect(await screen.findByText(/Photo selected. Photo preparation/)).toBeOnTheScreen();
+  expect(await screen.findByText(/Photo prepared on this device/)).toBeOnTheScreen();
   expect(files.remove).not.toHaveBeenCalled();
   expect(router.replace).not.toHaveBeenCalled();
 });

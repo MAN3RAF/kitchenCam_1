@@ -23,6 +23,7 @@ jest.mock('@/features/capture/photo-native', () => ({
     readable: jest.fn(),
   },
 }));
+jest.mock('@/features/capture/preparation-files', () => ({ activatePreparationCache: jest.fn() }));
 const input = { uri: 'file:///fixture.jpg', width: 1, height: 1, mimeType: 'image/jpeg' };
 function Probe() {
   const session = usePhotoSession();

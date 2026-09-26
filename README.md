@@ -2,7 +2,7 @@
 
 Mobile and local Supabase engineering foundations for the approved KitchenCam MVP. Phase 0 research gates remain open. No production infrastructure or product integrations are configured.
 
-The Phase D capture journey now adds local camera capture, single-photo selection, and preview while keeping images on the device. Image preparation, upload, recognition, and recipes remain unavailable. The Phase C manual journey still connects Home to real saved drafts, ingredient selection, explicit confirmation, and a persisted Ready screen. Configure the existing public Supabase environment pair to use it. See [the Phase D report](docs/research/SCAN_PHASE_D.md) and [Phase C report](docs/research/SCAN_PHASE_C.md) for validation and device gates.
+The photo journey supports local camera capture, single-photo selection, preview, and Phase E JPEG preparation. Preparation requires a rebuilt native development client with the local `KitchenCamImage` module; native build and physical-device validation remain open. Upload, recognition, and recipes remain unavailable. The Phase C manual journey still connects Home to real saved drafts, ingredient selection, explicit confirmation, and a persisted Ready screen. Configure the existing public Supabase environment pair to use it. See [Phase E](docs/research/SCAN_PHASE_E.md), [Phase D](docs/research/SCAN_PHASE_D.md), and [Phase C](docs/research/SCAN_PHASE_C.md) for validation and device gates.
 
 ## Local development
 
@@ -49,6 +49,7 @@ Local email is captured by the CLI email service (currently Mailpit at the Inbuc
 - [Phase B scan schema, lifecycle controls and validation](docs/research/SCAN_PHASE_B.md)
 - [Phase C manual ingredient journey and validation](docs/research/SCAN_PHASE_C.md)
 - [Phase D local camera/gallery capture and validation](docs/research/SCAN_PHASE_D.md)
+- [Phase E local JPEG preparation and validation](docs/research/SCAN_PHASE_E.md)
 - [Roadmap and blocked gates](docs/ROADMAP.md)
 - [Architecture](docs/ARCHITECTURE.md)
 - [Design and accessibility](docs/UX_FOUNDATION.md)

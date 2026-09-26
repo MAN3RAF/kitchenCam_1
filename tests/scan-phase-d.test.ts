@@ -117,7 +117,13 @@ test('abandon/manual/retake removes descriptor and fences late rejection', async
   session.discard();
   pending.reject(new Error('private native details'));
   await second;
-  expect(session.snapshot()).toEqual({ photo: null, busy: false, error: null, accepted: false });
+  expect(session.snapshot()).toEqual({
+    photo: null,
+    busy: false,
+    error: null,
+    prepared: null,
+    preparing: false,
+  });
   expect(files.remove).toHaveBeenCalledWith(descriptor('1'));
 });
 test('failed preparation cleans native temporary input and shows only safe copy', async () => {
@@ -126,17 +132,17 @@ test('failed preparation cleans native temporary input and shows only safe copy'
   expect(session.snapshot().error).toMatch(/JPEG/);
   expect(files.releaseInput).toHaveBeenCalledWith(input, 'gallery');
 });
-test('Use Photo checks readability, stores acceptance, and leaves active photo intact', async () => {
+test('preview validation checks readability and leaves active photo intact', async () => {
   await session.acquire('camera', async () => input);
-  expect(await session.validate('1', true)).toBe(true);
-  expect(session.snapshot().accepted).toBe(true);
+  expect(await session.validate('1')).toBe(true);
+  expect(session.snapshot().prepared).toBeNull();
   expect(files.readable).toHaveBeenCalledWith(descriptor('1'));
   expect(files.remove).not.toHaveBeenCalled();
 });
 test('disappeared local file clears preview with safe error', async () => {
   await session.acquire('camera', async () => input);
   files.readable.mockRejectedValue(new Error('private URI'));
-  expect(await session.validate('1', true)).toBe(false);
+  expect(await session.validate('1')).toBe(false);
   expect(session.snapshot().photo).toBeNull();
   expect(session.snapshot().error).toBe(new PhotoError('UNREADABLE').message);
   expect(session.snapshot().busy).toBe(false);
@@ -145,18 +151,18 @@ test('stale image events and validation cannot accept or remove a newer photo', 
   await session.acquire('camera', async () => input);
   const pending = deferred<void>();
   files.readable.mockReturnValue(pending.promise);
-  const validation = session.validate('1', true);
+  const validation = session.validate('1');
   session.discard();
   await session.acquire('gallery', async () => input);
   pending.resolve();
   expect(await validation).toBe(false);
   session.failPreview('1');
   expect(session.snapshot().photo?.revision).toBe('2');
-  expect(session.snapshot().accepted).toBe(false);
+  expect(session.snapshot().prepared).toBeNull();
 });
 test('camera blur does not cancel a subsequent preview validation', async () => {
   await session.acquire('camera', async () => input);
-  const promise = session.validate('1', true);
+  const promise = session.validate('1');
   session.cancelPending('camera');
   expect(await promise).toBe(true);
 });
