@@ -1,0 +1,9 @@
+*
+!package.json
+!pnpm-lock.yaml
+!policy.ts
+!image-reader.ts
+!inspection.ts
+!codec.ts
+!worker.ts
+!Dockerfile

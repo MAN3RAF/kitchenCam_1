@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-28",
+  "checkpoint": "1a1c67e30ffacb71f7269bad16e17bfd0a7e3789",
+  "probe": "server/sanitizer/review/lease-expiry-repro.cjs",
+  "environment": "local Supabase PostgreSQL; synthetic control-plane fixture; no image upload",
+  "observedLockWait": true,
+  "leaseExpiredBeforeUnlock": true,
+  "finishReturnedTrue": true,
+  "state": "queued",
+  "sanitization": "passed",
+  "recognitionJobs": 1,
+  "approvedAfterWriterDeadline": false,
+  "fixtureRowsRemaining": 0,
+  "interpretation": "Approval timestamp was assigned before expiry, but the transaction then blocked on raw inventory and committed trusted/queued state after expiry. Existing RPC inserted the recognition job; no recognition was run."
+}

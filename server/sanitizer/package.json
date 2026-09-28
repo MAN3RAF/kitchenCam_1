@@ -1,0 +1,16 @@
+{
+  "name": "kitchencam-sanitizer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": "24.19.0"
+  },
+  "scripts": {
+    "test": "node --test --test-concurrency=1 tests/*.test.ts"
+  },
+  "dependencies": {
+    "sharp": "0.35.4"
+  }
+}

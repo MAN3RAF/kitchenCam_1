@@ -249,3 +249,11 @@ HEAD remains `02fc633446d6b107799b36ba678e126a27d8fe5d` on `main`. The index is 
 ```
 
 **Recommend Phase B READY FOR CHECKPOINT. Stop for owner review. No commit, push or Phase C implementation was performed.**
+
+## Post-checkpoint erratum — Phase F sanitizer completion fencing (2026-09-28)
+
+Phase F reproduced a defect in the checkpointed `internal_scan_finish_job`: its lease check and output approval preceded a potentially blocking update of the raw-image inventory. A lease could expire during that wait and the RPC could still commit sanitizer approval and recognition eligibility. A worker-side timeout cannot cancel an already running database transaction reliably. The earlier Phase B verification did not cover this inventory-lock wait.
+
+The owner-authorized forward repair is `supabase/migrations/20260928010000_sanitizer_completion_fence.sql`. It acquires both inventory row locks before revalidating sanitizer authority and uses `clock_timestamp()` to observe elapsed time after waits. A final clock check rolls back all tentative success mutations if later writes cross a deadline. Terminal sanitizer error transitions also roll back if their inventory fencing waits past expiry. Existing signatures, grants, private boundaries, non-sanitizer behavior and historical migrations remain unchanged; generated public types have no drift.
+
+See [Phase F](SCAN_PHASE_F.md) for the negative historical reproduction, adversarial lock-wait tests, the distinction between the guarded transition and physical transaction commit, SQL/runtime totals, and remaining hosted gates. This repair supersedes only the earlier sanitizer-completion fencing claim; it does not rewrite the Phase B checkpoint's history.

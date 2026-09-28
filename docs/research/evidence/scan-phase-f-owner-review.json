@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-09-28",
+  "checkpoint": "1a1c67e30ffacb71f7269bad16e17bfd0a7e3789",
+  "environment": "local Linux Docker cgroup v2; synthetic fixtures only",
+  "resources": [
+    {
+      "case": "isolation",
+      "output": "{\"ro\":true,\"uid\":1000,\"status\":[\"CapEff:\\t0000000000000000\",\"NoNewPrivs:\\t1\"],\"net\":[\"lo\"],\"memory\":\"201326592\",\"pids\":\"32\",\"cpu\":\"100000 100000\"}",
+      "exit": 0,
+      "oom": false,
+      "elapsedMs": 501.99078499999996
+    },
+    {
+      "case": "memory",
+      "output": "",
+      "exit": 137,
+      "oom": true,
+      "elapsedMs": 532.745529
+    },
+    {
+      "case": "cpu",
+      "output": "",
+      "exit": 137,
+      "oom": false,
+      "elapsedMs": 4678.200541
+    },
+    {
+      "case": "disk",
+      "output": "{\"code\":\"ENOSPC\",\"bytes\":8388608}",
+      "exit": 0,
+      "oom": false,
+      "elapsedMs": 558.6737009999997
+    },
+    {
+      "case": "pids",
+      "output": "{\"failed\":true}",
+      "exit": 0,
+      "oom": false,
+      "elapsedMs": 1164.0395740000004
+    },
+    {
+      "case": "jpeg",
+      "accepted": true,
+      "inputBytes": 1588,
+      "metrics": {
+        "elapsedMs": 70.83988199999999,
+        "cpuMs": 56.901,
+        "peakRssKiB": 93112,
+        "processMs": 1074.3330049999995
+      }
+    },
+    {
+      "case": "progressive",
+      "accepted": true,
+      "inputBytes": 1956,
+      "metrics": {
+        "elapsedMs": 74.91468499999996,
+        "cpuMs": 61.259,
+        "peakRssKiB": 91660,
+        "processMs": 1032.3944150000007
+      }
+    },
+    {
+      "case": "png",
+      "accepted": true,
+      "inputBytes": 4056,
+      "metrics": {
+        "elapsedMs": 62.27140499999996,
+        "cpuMs": 55.588,
+        "peakRssKiB": 88244,
+        "processMs": 972.5711670000001
+      }
+    },
+    {
+      "case": "webp",
+      "accepted": true,
+      "inputBytes": 672,
+      "metrics": {
+        "elapsedMs": 56.260514,
+        "cpuMs": 70.068,
+        "peakRssKiB": 95684,
+        "processMs": 1012.8617950000007
+      }
+    },
+    {
+      "case": "lossless-webp",
+      "accepted": true,
+      "inputBytes": 84,
+      "metrics": {
+        "elapsedMs": 82.586409,
+        "cpuMs": 76.914,
+        "peakRssKiB": 95356,
+        "processMs": 1152.3123790000009
+      }
+    },
+    {
+      "case": "zero",
+      "accepted": false,
+      "inputBytes": 0,
+      "metrics": {
+        "category": "UNREADABLE"
+      }
+    },
+    {
+      "case": "random",
+      "accepted": false,
+      "inputBytes": 100,
+      "metrics": {
+        "category": "UNSUPPORTED_FORMAT"
+      }
+    },
+    {
+      "case": "svg",
+      "accepted": false,
+      "inputBytes": 41,
+      "metrics": {
+        "category": "UNSUPPORTED_FORMAT"
+      }
+    },
+    {
+      "case": "gif",
+      "accepted": false,
+      "inputBytes": 2282,
+      "metrics": {
+        "category": "UNSUPPORTED_FORMAT"
+      }
+    },
+    {
+      "case": "tiff",
+      "accepted": false,
+      "inputBytes": 4274,
+      "metrics": {
+        "category": "UNSUPPORTED_FORMAT"
+      }
+    },
+    {
+      "case": "truncated-jpeg",
+      "accepted": false,
+      "inputBytes": 1575,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "appended-jpeg",
+      "accepted": false,
+      "inputBytes": 1612,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "truncated-png",
+      "accepted": false,
+      "inputBytes": 4043,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "appended-png",
+      "accepted": false,
+      "inputBytes": 4080,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "truncated-webp",
+      "accepted": false,
+      "inputBytes": 659,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "appended-webp",
+      "accepted": false,
+      "inputBytes": 696,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "huge-header",
+      "accepted": false,
+      "inputBytes": 4056,
+      "metrics": {
+        "category": "IMAGE_TOO_LARGE"
+      }
+    },
+    {
+      "case": "compressed-metadata",
+      "accepted": false,
+      "inputBytes": 4073,
+      "metrics": {
+        "category": "UNSUPPORTED_FORMAT"
+      }
+    },
+    {
+      "case": "metadata-over-budget",
+      "accepted": false,
+      "inputBytes": 81596,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "malformed-exif",
+      "accepted": false,
+      "inputBytes": 1605,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "bad-png-pixels",
+      "accepted": false,
+      "inputBytes": 71,
+      "metrics": {
+        "category": "DECODE_FAILURE"
+      }
+    },
+    {
+      "case": "concatenated-jpeg",
+      "accepted": false,
+      "inputBytes": 3176,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "bad-crc",
+      "accepted": false,
+      "inputBytes": 4056,
+      "metrics": {
+        "category": "MALFORMED_IMAGE"
+      }
+    },
+    {
+      "case": "truncated-jpeg-pixels",
+      "accepted": false,
+      "inputBytes": 271,
+      "metrics": {
+        "category": "DECODE_FAILURE"
+      }
+    },
+    {
+      "case": "apng-marker",
+      "accepted": false,
+      "inputBytes": 4076,
+      "metrics": {
+        "category": "UNSUPPORTED_FORMAT"
+      }
+    },
+    {
+      "case": "1024x768",
+      "inputBytes": 648599,
+      "outputBytes": 460586,
+      "elapsedMs": 215.963617,
+      "cpuMs": 236.679,
+      "peakRssKiB": 98868,
+      "processMs": 1639.6608510000005
+    },
+    {
+      "case": "2048x1536",
+      "inputBytes": 2592437,
+      "outputBytes": 1840809,
+      "elapsedMs": 742.163366,
+      "cpuMs": 699.643,
+      "peakRssKiB": 126044,
+      "processMs": 2125.0080460000027
+    },
+    {
+      "case": "4000x3000",
+      "inputBytes": 9895710,
+      "outputBytes": 1293447,
+      "elapsedMs": 877.49628,
+      "cpuMs": 846.275,
+      "peakRssKiB": 154356,
+      "processMs": 1926.3249260000011
+    },
+    {
+      "case": "internal-wall",
+      "elapsedMs": 5545.329895999996
+    }
+  ]
+}

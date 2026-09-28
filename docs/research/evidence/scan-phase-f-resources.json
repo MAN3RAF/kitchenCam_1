@@ -1,0 +1,283 @@
+[
+  {
+    "case": "isolation",
+    "output": "{\"ro\":true,\"uid\":1000,\"status\":[\"CapEff:\\t0000000000000000\",\"NoNewPrivs:\\t1\"],\"net\":[\"lo\"],\"memory\":\"201326592\",\"pids\":\"32\",\"cpu\":\"100000 100000\"}",
+    "exit": 0,
+    "oom": false,
+    "elapsedMs": 333.696136
+  },
+  {
+    "case": "memory",
+    "output": "",
+    "exit": 137,
+    "oom": true,
+    "elapsedMs": 398.1819250000001
+  },
+  {
+    "case": "cpu",
+    "output": "",
+    "exit": 137,
+    "oom": false,
+    "elapsedMs": 4271.624755000001
+  },
+  {
+    "case": "disk",
+    "output": "{\"code\":\"ENOSPC\",\"bytes\":8388608}",
+    "exit": 0,
+    "oom": false,
+    "elapsedMs": 325.476764
+  },
+  {
+    "case": "pids",
+    "output": "{\"failed\":true}",
+    "exit": 0,
+    "oom": false,
+    "elapsedMs": 820.761477
+  },
+  {
+    "case": "jpeg",
+    "accepted": true,
+    "inputBytes": 1588,
+    "metrics": {
+      "elapsedMs": 21.117673999999994,
+      "cpuMs": 34.308,
+      "peakRssKiB": 96236,
+      "processMs": 501.90812299999925
+    }
+  },
+  {
+    "case": "progressive",
+    "accepted": true,
+    "inputBytes": 1956,
+    "metrics": {
+      "elapsedMs": 21.68704600000001,
+      "cpuMs": 34.543,
+      "peakRssKiB": 94632,
+      "processMs": 545.0374309999997
+    }
+  },
+  {
+    "case": "png",
+    "accepted": true,
+    "inputBytes": 4056,
+    "metrics": {
+      "elapsedMs": 64.767483,
+      "cpuMs": 49.565,
+      "peakRssKiB": 95688,
+      "processMs": 559.6724649999996
+    }
+  },
+  {
+    "case": "webp",
+    "accepted": true,
+    "inputBytes": 672,
+    "metrics": {
+      "elapsedMs": 65.53679599999998,
+      "cpuMs": 38.771,
+      "peakRssKiB": 95564,
+      "processMs": 538.6155739999995
+    }
+  },
+  {
+    "case": "lossless-webp",
+    "accepted": true,
+    "inputBytes": 84,
+    "metrics": {
+      "elapsedMs": 27.895272000000006,
+      "cpuMs": 40.331,
+      "peakRssKiB": 95924,
+      "processMs": 617.3937409999999
+    }
+  },
+  {
+    "case": "zero",
+    "accepted": false,
+    "inputBytes": 0,
+    "metrics": {
+      "category": "UNREADABLE"
+    }
+  },
+  {
+    "case": "random",
+    "accepted": false,
+    "inputBytes": 100,
+    "metrics": {
+      "category": "UNSUPPORTED_FORMAT"
+    }
+  },
+  {
+    "case": "svg",
+    "accepted": false,
+    "inputBytes": 41,
+    "metrics": {
+      "category": "UNSUPPORTED_FORMAT"
+    }
+  },
+  {
+    "case": "gif",
+    "accepted": false,
+    "inputBytes": 2282,
+    "metrics": {
+      "category": "UNSUPPORTED_FORMAT"
+    }
+  },
+  {
+    "case": "tiff",
+    "accepted": false,
+    "inputBytes": 4274,
+    "metrics": {
+      "category": "UNSUPPORTED_FORMAT"
+    }
+  },
+  {
+    "case": "truncated-jpeg",
+    "accepted": false,
+    "inputBytes": 1575,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "appended-jpeg",
+    "accepted": false,
+    "inputBytes": 1612,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "truncated-png",
+    "accepted": false,
+    "inputBytes": 4043,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "appended-png",
+    "accepted": false,
+    "inputBytes": 4080,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "truncated-webp",
+    "accepted": false,
+    "inputBytes": 659,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "appended-webp",
+    "accepted": false,
+    "inputBytes": 696,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "huge-header",
+    "accepted": false,
+    "inputBytes": 4056,
+    "metrics": {
+      "category": "IMAGE_TOO_LARGE"
+    }
+  },
+  {
+    "case": "compressed-metadata",
+    "accepted": false,
+    "inputBytes": 4073,
+    "metrics": {
+      "category": "UNSUPPORTED_FORMAT"
+    }
+  },
+  {
+    "case": "metadata-over-budget",
+    "accepted": false,
+    "inputBytes": 81596,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "malformed-exif",
+    "accepted": false,
+    "inputBytes": 1605,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "bad-png-pixels",
+    "accepted": false,
+    "inputBytes": 71,
+    "metrics": {
+      "category": "DECODE_FAILURE"
+    }
+  },
+  {
+    "case": "concatenated-jpeg",
+    "accepted": false,
+    "inputBytes": 3176,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "bad-crc",
+    "accepted": false,
+    "inputBytes": 4056,
+    "metrics": {
+      "category": "MALFORMED_IMAGE"
+    }
+  },
+  {
+    "case": "truncated-jpeg-pixels",
+    "accepted": false,
+    "inputBytes": 271,
+    "metrics": {
+      "category": "DECODE_FAILURE"
+    }
+  },
+  {
+    "case": "apng-marker",
+    "accepted": false,
+    "inputBytes": 4076,
+    "metrics": {
+      "category": "UNSUPPORTED_FORMAT"
+    }
+  },
+  {
+    "case": "1024x768",
+    "inputBytes": 648599,
+    "outputBytes": 460586,
+    "elapsedMs": 117.332143,
+    "cpuMs": 137.762,
+    "peakRssKiB": 102932,
+    "processMs": 610.984074
+  },
+  {
+    "case": "2048x1536",
+    "inputBytes": 2592437,
+    "outputBytes": 1840809,
+    "elapsedMs": 379.02068299999996,
+    "cpuMs": 330.91,
+    "peakRssKiB": 126484,
+    "processMs": 844.4399400000002
+  },
+  {
+    "case": "4000x3000",
+    "inputBytes": 9895710,
+    "outputBytes": 1293447,
+    "elapsedMs": 960.387249,
+    "cpuMs": 962.678,
+    "peakRssKiB": 163184,
+    "processMs": 1702.622621999999
+  },
+  {
+    "case": "internal-wall",
+    "elapsedMs": 5382.382578000001
+  }
+]
