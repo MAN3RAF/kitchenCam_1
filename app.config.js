@@ -18,6 +18,7 @@ module.exports = () => {
     userInterfaceStyle: 'automatic',
     ios: { supportsTablet: false },
     android: {
+      ...(environment.data === 'development' ? { package: 'com.kitchencam.app.development' } : {}),
       predictiveBackGestureEnabled: true,
       blockedPermissions: [
         'android.permission.RECORD_AUDIO',

@@ -17,10 +17,15 @@ const ios = readFileSync(
   join(root, 'modules/kitchencam-image/ios/KitchenCamImageModule.swift'),
   'utf8',
 );
-test('preparation has no upload, backend, logs, telemetry or JS image strings', () => {
+test('preparation has no upload, backend, media logs, telemetry or JS image strings', () => {
   expect(capture).not.toMatch(
-    /\bfetch\s*\(|supabase|\.upload\(|console\.|analytics\.|captureException|\.base64\(|\.bytes\(|\.text\(/,
+    /\bfetch\s*\(|supabase|\.upload\(|analytics\.|captureException|\.base64\(|\.bytes\(|\.text\(/,
   );
+  const withoutDiagnostics = readdirSync(join(root, 'src/features/capture'))
+    .filter((p) => /\.tsx?$/.test(p) && p !== 'camera-diagnostics.ts')
+    .map((p) => readFileSync(join(root, 'src/features/capture', p), 'utf8'))
+    .join('\n');
+  expect(withoutDiagnostics).not.toMatch(/console\./);
   expect(android + ios).not.toMatch(
     /https?:\/\/|URLSession|OkHttp|Base64|println\(|NSLog\(|print\(/,
   );

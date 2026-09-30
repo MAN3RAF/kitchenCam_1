@@ -6,18 +6,6 @@ export interface CameraPermissions {
   request(): Promise<CameraPermission>;
 }
 
-/** Request a supported bounded native still size; no resizing or source admission here. */
-export function captureSize(sizes: readonly string[]): string | null {
-  const candidates = sizes.flatMap((size) => {
-    const match = /^(\d+)x(\d+)$/.exec(size);
-    if (!match) return [];
-    const pixels = Number(match[1]) * Number(match[2]);
-    return pixels > 0 && pixels <= 12_000_000 ? [{ size, pixels }] : [];
-  });
-  candidates.sort((a, b) => b.pixels - a.pixels);
-  return candidates[0]?.size ?? null;
-}
-
 /** Permission checks never request permission. Only the explanation button calls request. */
 export class CameraAccessController {
   private generation = 0;

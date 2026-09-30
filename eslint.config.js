@@ -6,7 +6,9 @@ module.exports = defineConfig([
   {
     ignores: [
       '.agents/**',
+      '.cache/**',
       '.expo/**',
+      'android/**',
       'dist/**',
       'coverage/**',
       'expo-env.d.ts',

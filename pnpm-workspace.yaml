@@ -4,5 +4,15 @@ nodeLinker: hoisted
 allowBuilds:
   unrs-resolver: true
 overrides:
+  react-native-reanimated: 4.5.1
   react-native-worklets: 0.10.1
   '@react-native/metro-config': 0.86.3
+minimumReleaseAgeExclude:
+  - expo-constants@57.0.20
+  - expo-modules-core@57.0.20
+  - expo@57.0.26
+  - '@expo/ui@57.0.21'
+  - expo-camera@57.0.6
+  - expo-router@57.0.24
+patchedDependencies:
+  expo-dev-launcher@57.0.20: patches/expo-dev-launcher@57.0.20.patch

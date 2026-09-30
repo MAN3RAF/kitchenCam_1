@@ -7,10 +7,15 @@ const source = readdirSync(feature)
   .filter((name) => /\.tsx?$/.test(name))
   .map((name) => readFileSync(join(feature, name), 'utf8'))
   .join('\n');
-test('local capture has no network/backend/logging/analytics boundary', () => {
+test('local capture has no network/backend/analytics; only allowlisted startup diagnostics may log', () => {
   expect(source).not.toMatch(
-    /\bfetch\s*\(|supabase|\.rpc\(|\.upload\(|console\.|analytics\.|captureException/,
+    /\bfetch\s*\(|supabase|\.rpc\(|\.upload\(|analytics\.|captureException/,
   );
+  const withoutDiagnostics = readdirSync(feature)
+    .filter((name) => /\.tsx?$/.test(name) && name !== 'camera-diagnostics.ts')
+    .map((name) => readFileSync(join(feature, name), 'utf8'))
+    .join('\n');
+  expect(withoutDiagnostics).not.toMatch(/console\./);
   expect(source).not.toMatch(
     /requestMediaLibraryPermissions|requestMicrophonePermissions|recordAsync|onBarcodeScanned|launchCameraAsync/,
   );

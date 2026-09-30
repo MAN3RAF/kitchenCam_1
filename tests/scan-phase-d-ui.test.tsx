@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react-native';
-import { AppState, Linking, type AppStateStatus } from 'react-native';
+import { AppState, Linking, Platform, type AppStateStatus } from 'react-native';
 import { Camera } from 'expo-camera';
 import { router } from 'expo-router';
 import { CameraScreen } from '@/features/capture/camera-screen';
@@ -9,17 +9,31 @@ import { PreviewScreen } from '@/features/capture/preview-screen';
 import { PhotoSession, type PhotoFiles } from '@/features/capture/photo-session';
 import { usePhotoSession } from '@/features/capture/photo-provider';
 import { choosePhoto, recoverPicker } from '@/features/capture/photo-native';
+import { CAMERA_STARTUP_TIMEOUT_MS } from '@/features/capture/camera-acquisition';
 
 let mockCapture = jest.fn();
+let mockFocused = true;
+let mockCameraMounts = 0;
+let mockLiveCameras = 0;
+let mockMaxLiveCameras = 0;
+const mockPictureSizes = jest.fn();
 jest.mock('expo-camera', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   const RN = jest.requireActual<typeof import('react-native')>('react-native');
   return {
     Camera: { getCameraPermissionsAsync: jest.fn(), requestCameraPermissionsAsync: jest.fn() },
     CameraView: React.forwardRef(function MockCamera(props: object, ref) {
+      React.useEffect(() => {
+        mockCameraMounts++;
+        mockLiveCameras++;
+        mockMaxLiveCameras = Math.max(mockMaxLiveCameras, mockLiveCameras);
+        return () => {
+          mockLiveCameras--;
+        };
+      }, []);
       React.useImperativeHandle(ref, () => ({
         takePictureAsync: mockCapture,
-        getAvailablePictureSizesAsync: async () => ['1920x1080', '8000x6000'],
+        getAvailablePictureSizesAsync: mockPictureSizes,
       }));
       return <RN.View {...props} testID="native-camera" />;
     }),
@@ -33,7 +47,10 @@ jest.mock('expo-router', () => {
   const React = jest.requireActual<typeof import('react')>('react');
   return {
     router: { replace: jest.fn(), push: jest.fn() },
-    useFocusEffect: (callback: () => void) => React.useEffect(callback, [callback]),
+    useFocusEffect: (callback: () => void) => {
+      const focused = mockFocused;
+      React.useEffect(() => (focused ? callback() : undefined), [callback, focused]);
+    },
   };
 });
 jest.mock('@/components/screen', () => ({
@@ -58,6 +75,12 @@ let session: PhotoSession;
 let files: jest.Mocked<PhotoFiles>;
 let appChange: (state: AppStateStatus) => void;
 beforeEach(() => {
+  mockFocused = true;
+  mockCameraMounts = 0;
+  mockLiveCameras = 0;
+  mockMaxLiveCameras = 0;
+  jest.spyOn(console, 'info').mockImplementation(() => {});
+  mockPictureSizes.mockResolvedValue(['8000x6000', '4000x3000', '1920x1080']);
   let revision = 0;
   files = {
     prepare: jest.fn(async (asset, source, id) => ({
@@ -120,8 +143,6 @@ async function press(label: string) {
 async function grant() {
   await screen.findByRole('button', { name: 'Allow camera access' });
   await press('Allow camera access');
-  await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
-  expect(screen.getByTestId('native-camera')).toHaveProp('pictureSize', '1920x1080');
   await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
 }
 test('camera purpose precedes explicit permission and successful still capture opens preview without params', async () => {
@@ -189,6 +210,10 @@ test('background unmounts camera and revoked permission on resume prevents react
 test('unavailable hardware removes capture controls and offers alternatives', async () => {
   await render(<CameraScreen />);
   await grant();
+  await fireEvent(screen.getByTestId('native-camera'), 'mountError', {
+    message: 'private internal error',
+  });
+  await waitFor(() => expect(screen.getByTestId('native-camera')).toBeOnTheScreen());
   await fireEvent(screen.getByTestId('native-camera'), 'mountError', {
     message: 'private internal error',
   });
@@ -272,4 +297,200 @@ test('a removed local file and a direct preview reload both offer safe recovery'
   await view.unmount();
   await render(<PreviewScreen />);
   expect(screen.getByRole('button', { name: 'Retake' })).toBeEnabled();
+});
+
+describe('physical camera acquisition lifecycle', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.mocked(Camera.getCameraPermissionsAsync).mockResolvedValue({
+      granted: true,
+      canAskAgain: true,
+      status: 'granted',
+      expires: 'never',
+    } as Awaited<ReturnType<typeof Camera.getCameraPermissionsAsync>>);
+  });
+  afterEach(() => jest.useRealTimers());
+  async function advance(ms: number) {
+    await act(async () => jest.advanceTimersByTime(ms));
+  }
+  async function appState(state: AppStateStatus) {
+    await act(async () => {
+      AppState.currentState = state;
+      appChange(state);
+    });
+  }
+  test('iOS waits for its original ready event without Android size selection or remounting', async () => {
+    jest.replaceProperty(Platform, 'OS', 'ios');
+    await render(<CameraScreen />);
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    expect(mockCameraMounts).toBe(1);
+    const view = screen.getByTestId('native-camera');
+    expect(view).toHaveProp('facing', 'back');
+    for (const prop of ['pictureSize', 'mode', 'flash', 'enableTorch', 'mute', 'active'])
+      expect(view.props[prop]).toBeUndefined();
+    await press('Take photo');
+    expect(mockCapture).not.toHaveBeenCalled();
+    await advance(CAMERA_STARTUP_TIMEOUT_MS - 1);
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    await fireEvent(view, 'cameraReady');
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeEnabled();
+    await advance(CAMERA_STARTUP_TIMEOUT_MS * 3);
+    expect(mockCameraMounts).toBe(1);
+    expect(mockPictureSizes).not.toHaveBeenCalled();
+  });
+  test('Android bounds native capture size without replacing the camera view or accepting stale readiness', async () => {
+    jest.replaceProperty(Platform, 'OS', 'android');
+    const view = await render(<CameraScreen />);
+    const initialReady = screen.getByTestId('native-camera').props.onCameraReady;
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    expect(mockPictureSizes).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId('native-camera')).toHaveProp('pictureSize', '4000x3000');
+    expect(mockCameraMounts).toBe(1);
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    await act(async () => initialReady());
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeEnabled();
+    await press('Take photo');
+    expect(router.replace).toHaveBeenLastCalledWith('/scans/preview');
+    expect(mockLiveCameras).toBe(0);
+    await view.rerender(<PreviewScreen />);
+    expect(await screen.findByTestId('photo')).toBeOnTheScreen();
+    await press('Retake');
+    await view.rerender(<CameraScreen />);
+    expect(screen.getByTestId('native-camera').props.pictureSize).toBeUndefined();
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeEnabled();
+    expect(mockCameraMounts).toBe(2);
+    expect(mockMaxLiveCameras).toBe(1);
+  });
+  test('timeout commits an unmount, retries once, and ignores old ready and error callbacks', async () => {
+    await render(<CameraScreen />);
+    const old = screen.getByTestId('native-camera').props;
+    await advance(CAMERA_STARTUP_TIMEOUT_MS);
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    expect(mockLiveCameras).toBe(0);
+    expect(screen.getByText('Reopening camera')).toBeOnTheScreen();
+    await act(async () => old.onCameraReady());
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    await advance(1);
+    expect(mockCameraMounts).toBe(2);
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    await act(async () => {
+      old.onCameraReady();
+      old.onMountError({ message: 'late failure' });
+    });
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeEnabled();
+    await advance(CAMERA_STARTUP_TIMEOUT_MS * 3);
+    expect(mockCameraMounts).toBe(2);
+    expect(mockMaxLiveCameras).toBe(1);
+  });
+  test('two startup timeouts end in safe unavailable UI with no automatic loop', async () => {
+    await render(<CameraScreen />);
+    await advance(CAMERA_STARTUP_TIMEOUT_MS);
+    await advance(1);
+    await advance(CAMERA_STARTUP_TIMEOUT_MS);
+    expect(screen.getByText('Camera unavailable')).toBeOnTheScreen();
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Photo Library' })).toBeEnabled();
+    expect(screen.getByRole('button', { name: 'Enter Ingredients Manually' })).toBeEnabled();
+    await advance(CAMERA_STARTUP_TIMEOUT_MS * 100);
+    expect(mockCameraMounts).toBe(2);
+  });
+  test('route blur cancels startup and late callbacks; refocus starts unready', async () => {
+    const view = await render(<CameraScreen />);
+    const oldReady = screen.getByTestId('native-camera').props.onCameraReady;
+    mockFocused = false;
+    await view.rerender(<CameraScreen />);
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    await act(async () => oldReady());
+    await advance(CAMERA_STARTUP_TIMEOUT_MS * 3);
+    expect(mockCameraMounts).toBe(1);
+    mockFocused = true;
+    await view.rerender(<CameraScreen />);
+    expect(mockCameraMounts).toBe(2);
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+  });
+  test('background during initialization cancels startup and resume requires fresh readiness', async () => {
+    await render(<CameraScreen />);
+    const oldReady = screen.getByTestId('native-camera').props.onCameraReady;
+    await appState('background');
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    await advance(CAMERA_STARTUP_TIMEOUT_MS * 3);
+    await appState('active');
+    await act(async () => oldReady());
+    expect(mockCameraMounts).toBe(2);
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeEnabled();
+  });
+  test('permission revoked in Settings during initialization prevents remount and stale readiness', async () => {
+    await render(<CameraScreen />);
+    const oldReady = screen.getByTestId('native-camera').props.onCameraReady;
+    await appState('background');
+    jest.mocked(Camera.getCameraPermissionsAsync).mockResolvedValue({
+      granted: false,
+      canAskAgain: false,
+      status: 'denied',
+      expires: 'never',
+    } as Awaited<ReturnType<typeof Camera.getCameraPermissionsAsync>>);
+    await appState('active');
+    await act(async () => oldReady());
+    await advance(CAMERA_STARTUP_TIMEOUT_MS * 3);
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Open Settings' })).toBeEnabled();
+    expect(mockCameraMounts).toBe(1);
+  });
+  test('background during retry release cancels the queued retry', async () => {
+    await render(<CameraScreen />);
+    await advance(CAMERA_STARTUP_TIMEOUT_MS);
+    await appState('background');
+    await advance(CAMERA_STARTUP_TIMEOUT_MS * 3);
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    expect(mockCameraMounts).toBe(1);
+  });
+  test('duplicate active notifications do not interrupt an opening camera', async () => {
+    await render(<CameraScreen />);
+    await appState('active');
+    await appState('active');
+    expect(mockCameraMounts).toBe(1);
+    expect(Camera.getCameraPermissionsAsync).toHaveBeenCalledTimes(1);
+  });
+  test('capture → Preview → Retake releases the old view and acquires a fresh unready instance', async () => {
+    const view = await render(<CameraScreen />);
+    const oldReady = screen.getByTestId('native-camera').props.onCameraReady;
+    const oldError = screen.getByTestId('native-camera').props.onMountError;
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    await press('Take photo');
+    expect(router.replace).toHaveBeenLastCalledWith('/scans/preview');
+    expect(screen.queryByTestId('native-camera')).toBeNull();
+    expect(mockLiveCameras).toBe(0);
+    await view.rerender(<PreviewScreen />);
+    await press('Retake');
+    expect(router.replace).toHaveBeenLastCalledWith('/scans/camera');
+    await view.rerender(<CameraScreen />);
+    await act(async () => oldReady());
+    expect(mockCameraMounts).toBe(2);
+    expect(mockMaxLiveCameras).toBe(1);
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeDisabled();
+    await fireEvent(screen.getByTestId('native-camera'), 'cameraReady');
+    expect(screen.getByRole('button', { name: 'Take photo' })).toBeEnabled();
+    let finish!: (value: typeof input) => void;
+    mockCapture.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await press('Take photo');
+    await act(async () => oldError({ message: 'late error from replaced route' }));
+    expect(session.snapshot().busy).toBe(true);
+    await act(async () => finish(input));
+    expect(router.replace).toHaveBeenLastCalledWith('/scans/preview');
+    expect(session.snapshot().photo?.source).toBe('camera');
+    expect(router.push).not.toHaveBeenCalled();
+  });
 });

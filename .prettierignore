@@ -1,5 +1,7 @@
 .agents/
+.cache/
 .expo/
+android/
 node_modules/
 dist/
 coverage/

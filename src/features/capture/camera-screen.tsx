@@ -1,14 +1,15 @@
 import { ManualPhotoAction } from './manual-action';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
-import { AppState, Linking, StyleSheet } from 'react-native';
+import { useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { Linking, Platform, StyleSheet } from 'react-native';
 import { Camera, CameraView } from 'expo-camera';
-import { router, useFocusEffect } from 'expo-router';
+import { router } from 'expo-router';
 import { Button } from '@/components/button';
 import { ErrorState, LoadingState } from '@/components/feedback';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
-import { CameraAccessController, captureSize } from './camera-access';
+import { CameraAccessController } from './camera-access';
 import { nativeCameraAvailable } from './photo-native';
+import { useCameraAcquisition } from './use-camera-acquisition';
 import { usePhotoSession, usePhotoState } from './photo-provider';
 
 export function CameraScreen() {
@@ -24,78 +25,16 @@ export function CameraScreen() {
   );
   const permission = useSyncExternalStore(access.subscribe, access.snapshot, access.snapshot);
   const camera = useRef<CameraView>(null);
-  const active = useRef(false);
-  const [foreground, setForeground] = useState(false);
-  const [ready, setReady] = useState(false);
-  const [pictureSize, setPictureSize] = useState<string | null>(null);
-  const currentSize = useRef<string | null>(null);
-  const epoch = useRef(0);
-  const [mountId, setMountId] = useState(0);
   const [settingsError, setSettingsError] = useState(false);
-  useFocusEffect(
-    useCallback(() => {
-      const update = () => {
-        setMountId(++epoch.current);
-        active.current = AppState.currentState === 'active';
-        setForeground(active.current);
-        setReady(false);
-        currentSize.current = null;
-        setPictureSize(null);
-        session.cancelPending('camera');
-        if (active.current && nativeCameraAvailable) void access.check();
-        else if (!nativeCameraAvailable) access.unavailable();
-        else access.suspend();
-      };
-      update();
-      const subscription = AppState.addEventListener('change', update);
-      return () => {
-        epoch.current++;
-        active.current = false;
-        setForeground(false);
-        setReady(false);
-        session.cancelPending('camera');
-        access.suspend();
-        subscription.remove();
-      };
-    }, [access, session]),
+  const { acquisition, state } = useCameraAcquisition(access, session, nativeCameraAvailable);
+  const { generation } = state;
+  const enabled = ['mounting', 'initializing', 'selecting-size', 'configuring', 'ready'].includes(
+    state.phase,
   );
-  const enabled = foreground && permission === 'granted';
-  useEffect(() => {
-    if (!enabled || ready) return;
-    const timer = setTimeout(() => access.unavailable(), 15000);
-    return () => clearTimeout(timer);
-  }, [access, enabled, ready]);
-  function currentMount() {
-    return (
-      active.current &&
-      epoch.current === mountId &&
-      currentSize.current === pictureSize &&
-      access.snapshot() === 'granted'
-    );
-  }
-  async function cameraReady() {
-    if (!currentMount()) return;
-    if (pictureSize) {
-      setReady(true);
-      return;
-    }
-    try {
-      const sizes = await camera.current?.getAvailablePictureSizesAsync();
-      if (!currentMount()) return;
-      const size = captureSize(sizes ?? []);
-      if (!size) {
-        access.unavailable();
-        return;
-      }
-      currentSize.current = size;
-      setPictureSize(size);
-    } catch {
-      if (currentMount()) access.unavailable();
-    }
-  }
+  const ready = state.phase === 'ready';
   async function capture() {
     const view = camera.current;
-    if (!view || !active.current || !ready || permission !== 'granted') return;
+    if (!view || !acquisition.isReady(generation) || access.snapshot() !== 'granted') return;
     const success = await session.acquire('camera', async () => {
       const result = await view.takePictureAsync({
         base64: false,
@@ -109,7 +48,10 @@ export function CameraScreen() {
         mimeType: 'image/jpeg',
       };
     });
-    if (success && active.current) router.replace('/scans/preview');
+    if (success && acquisition.isReady(generation)) {
+      acquisition.suspend();
+      router.replace('/scans/preview');
+    }
   }
   return (
     <Screen>
@@ -123,24 +65,22 @@ export function CameraScreen() {
       {enabled ? (
         <>
           <CameraView
-            key={`${mountId}-${pictureSize ?? 'size-check'}`}
+            key={generation}
             ref={camera}
             style={styles.camera}
             facing="back"
-            mode="picture"
-            flash="off"
-            enableTorch={false}
-            pictureSize={pictureSize ?? undefined}
-            mute
+            pictureSize={state.pictureSize}
             onCameraReady={() => {
-              void cameraReady();
+              const view = camera.current;
+              if (Platform.OS === 'android') {
+                if (!view) return;
+                void acquisition.readyWithSize(generation, state.pictureSize, () =>
+                  view.getAvailablePictureSizesAsync(),
+                );
+              } else acquisition.ready(generation);
             }}
             onMountError={() => {
-              if (currentMount()) {
-                setReady(false);
-                session.cancelPending('camera');
-                access.unavailable();
-              }
+              if (acquisition.fail(generation, 'mount-error')) session.cancelPending('camera');
             }}
             accessible={false}
           />
@@ -155,19 +95,17 @@ export function CameraScreen() {
             }}
           />
         </>
+      ) : state.phase === 'releasing' ? (
+        <LoadingState label="Reopening camera" />
       ) : permission === 'checking' ? (
         <LoadingState label="Checking camera access" />
-      ) : permission === 'unavailable' ? (
+      ) : state.phase === 'failed' || permission === 'unavailable' ? (
         <ErrorState
           title="Camera unavailable"
           message="Use the photo library or enter ingredients manually. Camera capture requires the Android or iOS app and working camera hardware."
           retry={
             nativeCameraAvailable
               ? () => {
-                  setMountId(++epoch.current);
-                  currentSize.current = null;
-                  setPictureSize(null);
-                  setReady(false);
                   void access.check();
                 }
               : undefined

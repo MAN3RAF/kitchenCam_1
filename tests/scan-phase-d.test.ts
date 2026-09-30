@@ -1,4 +1,4 @@
-import { CameraAccessController, captureSize } from '@/features/capture/camera-access';
+import { CameraAccessController } from '@/features/capture/camera-access';
 import {
   PhotoSession,
   PhotoError,
@@ -13,10 +13,6 @@ const input: PhotoInput = {
   height: 600,
   mimeType: 'image/jpeg',
 };
-test('camera requests a supported bounded still resolution without image resizing', () => {
-  expect(captureSize(['Photo', '8000x6000', '4000x3000', '1920x1080'])).toBe('4000x3000');
-  expect(captureSize(['Photo', 'High', '8000x6000'])).toBeNull();
-});
 const descriptor = (revision: string): LocalPhoto => ({
   ...input,
   mimeType: 'image/jpeg',
