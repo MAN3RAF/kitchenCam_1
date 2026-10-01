@@ -1,5 +1,7 @@
 # KitchenCam Privacy and Security Threat Model
 
+> **Scope update — 2026-10-01:** The [simplified MVP architecture](MVP_ARCHITECTURE.md) supersedes earlier product scope and the old Phase G sequence. Existing identity/media/provider/cost threats remain relevant. Social and subscription threats below are deferred. New generation replay, credit concurrency, malformed recipe output and forged/delayed reward callbacks are covered in the MVP design; implementation tests are still required.
+
 Status: Phase 0 practical threat model; implementation and penetration testing remain pending.  
 Checked: 2026-09-19
 

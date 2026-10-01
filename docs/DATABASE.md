@@ -1,5 +1,7 @@
 # KitchenCam Database Design
 
+> **Scope update — 2026-10-01:** The [simplified MVP architecture](MVP_ARCHITECTURE.md) supersedes earlier product scope and the old Phase G sequence. Implemented identity and scan controls remain preserved. Proposed social, nutrition and subscription tables below are deferred. The new generation/accounting records in the MVP document are designs only, not existing migrations; do not infer a working credit ledger from this file.
+
 Status: approved logical MVP baseline. The identity/preferences/privacy subset now has local forward migrations; later domain tables remain designs only.
 
 Phase B update: scan state and lifecycle controls are now implemented locally; see [the implementation report](research/SCAN_PHASE_B.md). The logical scan table list below is not the physical schema. The implemented public tables are `scans` and `scan_deletions`; constrained ingredient drafts and confirmation snapshots live on `scans`. Private tables hold controls, immutable image/cleanup inventory, hashed upload authorizations, jobs, operation idempotency and processing policy. There is no ingredient taxonomy, provider audit payload, recipe or quota implementation. Canonical/normalized ingredient claims remain null until taxonomy validation is implemented. No private image path or provider envelope is in a public table.

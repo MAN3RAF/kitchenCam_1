@@ -1,5 +1,7 @@
 # KitchenCam Experience and Design Direction
 
+> **Scope update — 2026-10-01:** The [simplified MVP architecture](MVP_ARCHITECTURE.md) supersedes earlier product scope and the old Phase G sequence. The five-tab navigation, Premium, browsing and community directions below are historical, not active requirements. Use the revised [UX foundation](UX_FOUNDATION.md) for the current simple stack. Existing visual tokens and accessibility principles remain reusable.
+
 Status: approved MVP design direction, not implemented.
 
 ## Experience principles

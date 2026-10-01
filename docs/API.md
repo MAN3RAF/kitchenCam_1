@@ -1,111 +1,39 @@
-# KitchenCam API Design
+# KitchenCam MVP API design
 
-Status: approved draft MVP `/v1` contract. Existing account Edge Functions and Phase B database RPCs are implemented locally; the `/v1` scan HTTP adapter remains unimplemented.
+Status: provider-neutral proposal reviewed 2026-10-01; not implemented by this documentation task. Supersedes the former recipe-search, community and subscription API roadmap. See [MVP_ARCHITECTURE.md](MVP_ARCHITECTURE.md) for normative input/result validation, accounting and failure rules.
 
-Phase C uses a typed mobile adapter over the existing authenticated `create_scan` / `mutate_scan` RPCs and RLS-protected SELECTs for manual scans. Phase D adds no API operation: camera/gallery selection and preview remain local-only, and no image leaves the device. The adapter projects and validates only manual ingredient data, performs no direct table writes, and does not implement the future `/v1` HTTP envelopes. Saves carry `expectedVersion` and `expectedDraftRevision`; confirmation carries `expectedVersion` and `draftRevision`. UUID operation keys and unchanged request bodies survive ambiguous retries within the account session. Reads use explicit public columns and 20-row history pages ordered by creation time and ID. See [Phase C](research/SCAN_PHASE_C.md) and [Phase D](research/SCAN_PHASE_D.md).
+## Small public surface — ACTIVE MVP design
 
-## Conventions
+| Interface                       | Purpose                                                                                                                               |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /v1/generate-recipe`      | One idempotent operation for manual ingredients or an opaque photo reference; returns the same recipe result                          |
+| `GET /v1/usage`                 | Current authoritative balance, safe remote economics/feature configuration, derived user-facing counts and pending operation recovery |
+| `POST /v1/photos`               | Bounded authenticated byte intake using preserved security controls; returns an opaque owner-bound reference                          |
+| `POST /v1/reward-sessions`      | Later: authorize one voluntary ad session, pin reward terms and reserve daily capacity                                                |
+| `GET /v1/admob/reward-callback` | Later: signed server-to-server reward verification, unique transaction handling and authoritative grant                               |
 
-- Base path: `/v1` over HTTPS.
-- Auth: Supabase access token in `Authorization: Bearer <token>`; no user ID accepted as authority.
-- JSON uses camelCase externally and typed schemas. Timestamps are RFC 3339 UTC.
-- Mutating creation/processing endpoints accept `Idempotency-Key`.
-- List endpoints use opaque cursor pagination.
-- Responses include `X-Request-Id`; clients may send `X-Client-Request-Id`.
-- Public API responses never expose provider secrets, internal object paths, raw webhook payloads, or model prompts.
-
-## Response shapes
-
-Successful single-resource responses return `{ "data": ... }`; lists return `{ "data": [...], "page": { "nextCursor": ... } }`.
-
-Errors return:
+The last two interfaces are **DEFERRED** until the ad phase. Existing Supabase Auth/account/privacy operations stay available; private database RPCs do not become public product endpoints. Paths are conceptual and can map to Edge Function names behind the mobile adapter.
 
 ```json
-{
-  "error": {
-    "code": "SCAN_PROVIDER_TIMEOUT",
-    "message": "Ingredient recognition is taking longer than expected.",
-    "requestId": "req_...",
-    "retryable": true,
-    "fieldIssues": []
-  }
-}
+{ "mode": "manual", "ingredients": ["egg", "tomato", "onion"] }
 ```
 
-Stable categories: `VALIDATION`, `UNAUTHENTICATED`, `FORBIDDEN`, `NOT_FOUND`, `CONFLICT`, `QUOTA_EXCEEDED`, `CONSENT_REQUIRED`, `RATE_LIMITED`, `PROVIDER_TIMEOUT`, `PROVIDER_UNAVAILABLE`, `UNSAFE_OR_UNSUPPORTED`, and `INTERNAL`.
+```json
+{ "mode": "photo", "photoReference": "opaque-owner-bound-reference" }
+```
 
-## Scan and upload endpoints
+An optional `expectedEconomyVersion` protects a new request from an unseen price change. Every generation request requires an authenticated owner and an `Idempotency-Key`. Do not accept provider/model, authoritative user ID, price, credit grant or arbitrary image URL from the client.
 
-[Phase B](research/SCAN_PHASE_B.md) implements database controls beneath this contract: owner-authenticated `create_scan` and `mutate_scan`, read-only owner tables, and service-only upload/job/cleanup RPCs. Database rows use SQL column names and are not the camelCase `ScanStatus` HTTP envelope. A future adapter must validate/map the Phase A strict schemas, turn safe database errors into the API envelope, and never expose service-only RPC results. Processing admission remains disabled. No upload capability URL is issued by Phase B.
+Return `200 {data:{generationId,status:"succeeded",result,usage}}` or `202 {data:{generationId,status:"processing",retryAfterSeconds}}`. The client resumes by repeating the same POST/key/body; no new dispatch or debit occurs. Same key with different input is a conflict. Final errors include a safe code, request ID, retry guidance and fresh usage when available. Raw provider text is never returned.
 
-The reviewed Phase A [scan contracts](research/SCAN_CONTRACTS.md) supersede the earlier combined upload/creation draft. They define separate creation, manual creation, upload authorization, upload completion/sanitization, recognition, status, photo revision, manual fallback, draft edit, explicit confirmation, cancellation and deletion operations. Strict executable schemas and a provider-neutral recognition port live only in research tooling; **no scan endpoint is implemented**.
+`RecipeResult` v1 contains only `schemaVersion`, `detectedIngredients`, and `recipe` with `name`, `description`, `missingOptionalIngredients`, `estimatedMinutes`, `steps`, `youtubeSearchQuery`. The full strict JSON Schema, text/size bounds and example are in the MVP document. Mobile builds a real YouTube search URL from the encoded query; no invented video URL.
 
-Durable states are `awaiting_upload`, `sanitizing`, `queued`, `recognizing`, `needs_confirmation`, `confirmed`, `failed`, `cancelled`, and `expired`. Recognition requires verified sanitized bytes bound to the current revision. Manual entry consumes no scan quota and needs no image. No household photo is uploaded while recognition is unavailable.
+## PRESERVED INTERNAL INFRASTRUCTURE
 
-The owner approved authenticated bounded upload ingress: the [local security spike](research/SCAN_PHASE_A.md) found that SDK capabilities last two hours, and ten-minute S3 capabilities permit overwrite/replay. A response claiming a shorter lifetime cannot repair that. The approved ingress must enforce authenticated ownership, one-use authorization, bounded request/body size, type restrictions, target binding, cancellation/account-deletion fencing, idempotency/reconciliation and cleanup. Neither the SDK two-hour capability nor direct S3 presigned PUT is the KitchenCam security boundary. The ingress is not implemented; production hosting/runtime selection and deployment remain unresolved and unauthorized.
+Phase C manual editing currently uses authenticated `create_scan` / `mutate_scan` RPCs and owner-protected reads, with version/revision checks and idempotency. These can remain behind adapters while the product hides draft history and confirmation screens. Manual editing is free; the new manual **recipe generation** operation consumes the same allowance as photo recipe generation.
 
-Raw/transient images must be deleted within 24 hours of first upload, including failures/abandonment, preferably earlier. History defaults to ingredients/results; explicit retention uses a separate sanitized derivative. Versioning, idempotency, safe errors and privacy boundaries are defined in the linked contract.
+Keep private Storage, bounded authenticated intake, sanitizer approval, ownership, lease/revision fences and deletion inventory. Never substitute an unrestricted direct upload URL for those controls. The locally archived `scan-upload` work is stopped pending separate review and is not an approved implementation of this API.
 
-## Recipe endpoints
+## DEFERRED
 
-| Method and path | Purpose |
-|---|---|
-| `POST /v1/recipe-searches` | Search/rank from confirmed ingredients and explicit filters |
-| `GET /v1/recipes/{recipeId}` | Licensed recipe detail, provenance, rights, and user relationship |
-| `GET /v1/recipes/{recipeId}/nutrition?servings=N` | Versioned nutrition calculation and completeness |
-| `GET /v1/recipes/{recipeId}/reviews` | Published reviews with cursor/sort |
-| `POST /v1/recipes/{recipeId}/cook-sessions` | Start a cooking session |
-| `PATCH /v1/cook-sessions/{id}` | Complete/cancel/update progress idempotently |
-
-Search input includes `scanId` or explicit confirmed ingredients, diet/allergen exclusions, time, difficulty, equipment, meal type, cuisine, calorie range, nutrition goal, missing-ingredient limit, sort, and cursor. The backend re-reads private preferences and does not trust a client claim that a recipe is allergen-safe.
-
-Results return match components, missing ingredients, explicit unknown-safety flags, provenance, and nutrition status. Provider raw scores are not exposed as KitchenCam confidence. MVP results come from licensed/database recipes; AI-generated recipes are not returned.
-
-## Favorites, history, and community
-
-| Method and path | Purpose |
-|---|---|
-| `PUT /v1/me/favorites/{recipeId}` / `DELETE` | Idempotent favorite state |
-| `GET /v1/me/favorites` | Paginated favorites |
-| `GET /v1/me/history` / `DELETE /v1/me/history` | Read or clear private history |
-| `POST /v1/recipes/{recipeId}/reviews` | Permanent-account review submission |
-| `PATCH /v1/reviews/{reviewId}` / `DELETE` | Owner edit/delete under moderation rules |
-| `PUT /v1/reviews/{reviewId}/helpful` / `DELETE` | Idempotent vote |
-| `POST /v1/reviews/{reviewId}/reports` | Report abuse/spam with rate limits |
-| `POST /v1/review-uploads` | Version 1.1: signed quarantined photo upload target |
-
-Meal plan and grocery endpoints use `/v1/me/meal-plans` and `/v1/me/grocery-lists` when version 1.1 is approved.
-
-## Account and preference endpoints
-
-- `GET/PATCH /v1/me/preferences`
-- `GET /v1/me/export` starts an asynchronous export with secure expiring delivery.
-- `DELETE /v1/me` requires recent authentication, starts deletion, revokes sessions, and returns a request ID.
-- Guest-to-account linking uses the auth provider plus a server merge endpoint with an explicit conflict policy.
-
-## Subscription endpoints and webhook
-
-| Method and path | Purpose |
-|---|---|
-| `GET /v1/me/entitlements` | Backend-authoritative premium and quota projection |
-| `POST /v1/me/entitlements/refresh` | Rate-limited reconciliation after purchase/restore |
-| `POST /v1/webhooks/revenuecat` | Signed, idempotent provider webhook; no user auth |
-| `GET /v1/app-config` | Cacheable ad/feature policy without secrets |
-
-The client purchases through RevenueCat, not through the KitchenCam API. A KitchenCam account is not required to purchase; RevenueCat-supported anonymous identity/alias/transfer behavior is reconciled when an account is linked. Webhook processing supports replay and out-of-order events by comparing provider event and entitlement timestamps. The server never trusts `isPremium` from the app.
-
-## Quotas and rate limits
-
-Rate limits are per user plus device/IP risk signals. Scan/generation quotas use an append-only usage ledger and atomic reservation/finalization to avoid double charging. Scans that fail because of KitchenCam or an upstream provider automatically restore reserved quota. Return `429` with `Retry-After` and remaining-period metadata that does not reveal fraud controls.
-
-Final limits are intentionally unspecified until Phase 0 unit economics are complete and the owner approves them.
-
-## Versioning and provider isolation
-
-Breaking client changes require a new API version or negotiated capability. Additive fields are allowed. Mobile builds send app version/platform, and the server can require a minimum supported version for security reasons.
-
-Provider responses are mapped into KitchenCam contracts inside adapters. Store provider and schema versions with scans, recipes, and nutrition snapshots. Contract tests replay sanitized fixtures so provider changes fail before production.
-
-## Webhook and retry behavior
-
-Verify signatures against the raw body before parsing. Persist event identity and receipt time, acknowledge only after durable write, then process asynchronously when possible. Duplicate events are successful no-ops. Failed events retry with backoff and alert after a bounded threshold. Secrets are rotated with overlap support.
+Recipe search/detail catalog APIs, nutrition, favorites/history browsing, reviews/ratings, social profiles, purchases and premium entitlements are outside the MVP API surface. Do not implement their former route reservations.

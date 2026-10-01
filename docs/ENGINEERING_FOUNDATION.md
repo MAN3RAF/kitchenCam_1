@@ -1,5 +1,7 @@
 # Phase 1 Mobile Engineering Foundation
 
+> **Scope update — 2026-10-01:** The [simplified MVP architecture](MVP_ARCHITECTURE.md) supersedes earlier product scope and the old Phase G sequence. This is historical implementation evidence. Route reservations and five-tab composition below describe the existing shell, not the target MVP. Preserve tooling and security boundaries; use the current architecture for future product work.
+
 Scope authorized: mobile initialization, navigation shell, design system, configuration boundaries, quality tooling, and tests. Phase 0 is not closed. This document records implementation choices, not new product decisions.
 
 ## Compatibility decision

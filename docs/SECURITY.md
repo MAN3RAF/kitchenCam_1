@@ -1,5 +1,7 @@
 # KitchenCam Security and Privacy Design
 
+> **Scope update — 2026-10-01:** The [simplified MVP architecture](MVP_ARCHITECTURE.md) supersedes earlier product scope and the old Phase G sequence. Existing credential, auth, RLS, media, lifecycle and cleanup guarantees remain required. Subscription/community-specific sections below are deferred product context. Apply the MVP document’s new recipe validation, usage reservation and verified-reward boundaries in future implementation. All AI provider secrets, including Gemini, remain server-only.
+
 Status: approved MVP engineering baseline; final legal/privacy/nutrition review remains open.
 
 Phase C manual ingredients are untrusted user input. The mobile adapter uses owner-authenticated Phase B RPCs with revision checks and idempotency; direct table mutations remain prohibited. Ingredient text stays out of navigation, analytics, crash metadata, and application logging. Account changes discard temporary scan caches/editors and fence late callbacks; each request can use only the matching account's token. Phase D requests camera access only after an explicit choice, uses a private app-owned local copy for preview, blocks microphone/barcode/broad library permissions, and sends no image to a provider. Image URIs, filenames, metadata, and bytes stay out of telemetry and navigation. See [Phase D](research/SCAN_PHASE_D.md) for the capture boundary and native-device gates.

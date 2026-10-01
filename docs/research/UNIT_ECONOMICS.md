@@ -1,5 +1,7 @@
 # KitchenCam Unit Economics Model
 
+> **Scope update — 2026-10-01:** The [simplified MVP architecture](../MVP_ARCHITECTURE.md) supersedes earlier product scope and the old Phase G sequence. The subscription, RevenueCat, recipe-catalog and old Free/Premium scenarios below are historical research, not current prices, quotas or release gates. The MVP uses configurable free generations plus banner/rewarded ads. No old pricing or ad-revenue estimate is adopted as a validated current assumption.
+
 Status: Phase 0 planning model; assumptions are not pricing or quota decisions.  
 Currency: USD. Checked: 2026-09-19.
 
